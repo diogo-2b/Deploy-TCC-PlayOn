@@ -1,0 +1,451 @@
+@import "tailwindcss";
+
+:root {
+  --cor-fundo: #1b1b1b;
+  --cor-caixa: #2f3136;
+  --cor-texto: white;
+  --cor-destaque: goldenrod;
+  --cor-hover: goldenrod;
+  --cor-secundaria: #bbb;
+  --cor-scrollbar-track: #333;
+}
+
+button,
+a,
+select,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+input[type="checkbox"],
+input[type="radio"],
+input[type="file"],
+label,
+[role="button"] {
+  cursor: pointer;
+}
+
+/* Container específico para Home */
+.home-body {
+  position: relative;
+  min-height: 100vh;
+  background: #111;
+  overflow-x: hidden;
+}
+
+.background-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.tema-claro {
+  --cor-fundo: #ffffff;
+  --cor-caixa: #eeeeee;
+  --cor-texto: #222;
+  --cor-destaque: #c09318;
+  --cor-hover: #e0ba26;
+  --cor-secundaria: #444;
+  --cor-scrollbar-track: #ccc;
+}
+
+.main-container {
+  position: relative;
+  z-index: 10;
+  font-family: Arial, sans-serif;
+  background: transparent;
+  color: var(--cor-texto);
+  width: 100%;
+  min-height: 100vh;
+  height: auto;
+  margin: 0;
+  padding: 0 0 40px;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+/* NAV BAR */
+/* Nav container: background + layout */
+nav .nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background-color: rgba(47, 49, 54, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+nav ul {
+  display: flex;
+  justify-content: flex-start;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+
+nav ul li {
+  margin: 0 12px;
+}
+
+nav ul li a {
+  text-decoration: none;
+  color: var(--cor-texto);
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+nav ul li a:hover {
+  color: var(--cor-hover);
+}
+
+/* Nav container base */
+nav.nav-principal {
+  position: relative;
+  z-index: 1000;
+}
+
+nav .nav-container {
+  position: relative;
+  z-index: 20;
+  isolation: isolate;
+  overflow: visible;
+}
+
+.nav-search-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 1001;
+  flex: 0 0 auto;
+  margin-left: auto; /* empurra a busca para a direita */
+}
+
+.nav-search {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--cor-texto);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 6px 10px;
+  border-radius: 6px;
+  outline: none;
+  width: 100%;
+  min-width: 160px;
+  max-width: 900px;
+}
+
+.nav-search::placeholder {
+  color: var(--cor-secundaria);
+}
+
+/* Modal de resultados da busca dentro da NavBar */
+.nav-search-modal {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 420px;
+  max-width: 90vw;
+  background: var(--cor-caixa);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.8);
+  padding: 8px;
+  z-index: 1100;
+  max-height: 360px;
+  overflow: auto;
+  backdrop-filter: blur(6px);
+  isolation: isolate;
+}
+
+/* Custom scrollbar for the modal */
+.nav-search-modal::-webkit-scrollbar {
+  width: 10px;
+}
+.nav-search-modal::-webkit-scrollbar-track {
+  background: var(--cor-scrollbar-track);
+  border-radius: 8px;
+}
+.nav-search-modal::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 215, 0, 0.18),
+    rgba(255, 215, 0, 0.08)
+  );
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.nav-search-modal {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 215, 0, 0.28) var(--cor-scrollbar-track);
+}
+
+/* Custom scrollbar for textareas */
+textarea::-webkit-scrollbar {
+  width: 10px;
+}
+textarea::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+}
+textarea::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(192, 147, 24, 0.78),
+    rgba(192, 147, 24, 0.22)
+  );
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+textarea {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(192, 147, 24, 0.72) rgba(255, 255, 255, 0.06);
+}
+
+select {
+  appearance: none;
+  background-color: rgba(10, 10, 10, 0.88) !important;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #c09318 50%),
+    linear-gradient(135deg, #c09318 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 2px),
+    calc(100% - 13px) calc(50% - 2px);
+  background-size:
+    5px 5px,
+    5px 5px;
+  background-repeat: no-repeat;
+  color: #fff;
+  cursor: pointer;
+}
+
+select option {
+  background-color: #111111;
+  color: #f5f5f5;
+}
+
+select option:checked {
+  background: linear-gradient(180deg, #c09318, #91710e);
+  color: #fff;
+}
+
+.nav-search-section {
+  margin-bottom: 8px;
+}
+
+.nav-search-section-title {
+  font-size: 12px;
+  color: var(--cor-destaque);
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.search-result-item {
+  display: block;
+  padding: 8px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--cor-texto);
+  background: transparent;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+
+.search-result-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--cor-hover);
+}
+
+.result-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.result-sub {
+  font-size: 12px;
+  color: var(--cor-secundaria);
+}
+
+.secao-carrossel {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  padding: 20px;
+  overflow: visible;
+  min-height: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.secao-carrossel::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.titulo-secao {
+  font-size: 24px;
+  margin-bottom: 15px;
+  color: var(--cor-destaque);
+}
+
+/* CARROSSEL */
+.carrossel {
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  overflow-y: visible;
+  gap: 15px;
+  padding-bottom: 10px;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.lista-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(180px, 1fr));
+  align-items: stretch;
+  overflow: visible;
+}
+
+.lista-grid .card {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  flex: 1 1 auto;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* CARD */
+.card {
+  background-color: rgba(47, 49, 54, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  min-width: 200px;
+  max-width: 200px;
+  flex: 0 0 200px;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+.card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.card-info {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.card-info h3 {
+  margin-bottom: 0.25rem;
+  color: var(--cor-texto);
+}
+
+.card-info p {
+  font-size: 14px;
+  color: var(--cor-secundaria);
+  display: -webkit-box;
+  line-clamp: 3;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 3.9em;
+}
+
+.card-info h3 {
+  display: -webkit-box;
+  line-clamp: 1;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* RESPONSIVO */
+@media (max-width: 1200px) {
+  .lista-grid {
+    grid-template-columns: repeat(4, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .lista-grid {
+    grid-template-columns: repeat(2, minmax(150px, 1fr));
+  }
+
+  nav .nav-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .nav-search {
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .card {
+    min-width: 160px;
+    max-width: 160px;
+  }
+
+  .card-info h3 {
+    font-size: 14px;
+  }
+
+  .card-info p {
+    font-size: 12px;
+  }
+
+  nav ul {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  nav ul li {
+    margin: 10px 0;
+  }
+
+  .carrossel {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    overflow-x: hidden;
+  }
+
+  .card {
+    width: 100%;
+    max-width: none;
+  }
+
+  .card img {
+    height: 100px;
+  }
+}

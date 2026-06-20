@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(0deg, black, goldenrod);
+  color: white;
+  height: 100vh;
+}
+
+/* Caixa de login */
+.index-container {
+  padding: 40px;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  /* font-size: 24px; */
+  color: #ffffff;
+  margin-top: 0;
+}
+
+.registro-button {
+  background: none;
+  border: none;
+  color: #c09318;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.login-box {
+  background-color: #2f3136;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  max-width: 400px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+label {
+  font-size: 14px;
+  margin-bottom: 5px;
+  color: #b9bbbe;
+}
+
+input[type="text"],
+input[type="password"] {
+  padding: 12px;
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #202225;
+  color: white;
+  font-size: 14px;
+  outline: none;
+}
+
+input:focus {
+  border: 1px solid #c09318;
+}
+
+/* Botão de entrar */
+button[type="submit"] {
+  background-color: #81700e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button[type="submit"]:hover {
+  background-color: #978e0f;
+}
+
+/* Main container */
+.main-container {
+  width: 100%;
+  height: calc(100vh - 140px);
+  background-color: #1b1b1b;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+

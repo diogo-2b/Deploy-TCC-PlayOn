@@ -1,0 +1,131 @@
+.alterarPerfil {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  outline: none;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:root {
+  --cor-header: #2f3136;
+  --cor-destaque: goldenrod;
+  --cor-texto-header: white;
+  --cor-menu: #202225;
+  --cor-menu-hover: #444;
+  --cor-borda-foto: goldenrod;
+  --cor-btn-hover: goldenrod;
+  --cor-logout-hover: red;
+}
+
+body.tema-claro {
+  --cor-header: #eeeeee;
+  --cor-destaque: #c09318;
+  --cor-texto-header: #111;
+  --cor-menu: #f4f4f4;
+  --cor-menu-hover: #ddd;
+  --cor-borda-foto: #c09318;
+  --cor-btn-hover: #e0ba26;
+  --cor-logout-hover: #c62828;
+}
+
+.alterarPerfil {
+  background-color: transparent;
+}
+
+header {
+  background-color: var(--cor-header);
+  padding: 22px 20px;
+  position: relative;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  z-index: 1000;
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+}
+
+.site-title {
+  color: var(--cor-destaque);
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.profile-info {
+  position: absolute;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  z-index: 1001;
+}
+
+.profile-pic {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid var(--cor-borda-foto);
+}
+
+.settings-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--cor-texto-header);
+  transition: color 0.3s;
+}
+
+.settings-button:hover {
+  color: var(--cor-btn-hover);
+}
+
+/* MENU LATERAL */
+.side-menu {
+  position: absolute;
+  top: 20px;
+  right: 10px;
+  background-color: var(--cor-menu);
+  border: 1px solid var(--cor-menu-hover);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex; /* ou remova totalmente */
+  flex-direction: column;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+  z-index: 2000;
+  width: 160px;
+}
+
+.side-menu button {
+  background: none;
+  border: none;
+  padding: 10px;
+  color: var(--cor-texto-header);
+  text-align: left;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.2s;
+}
+
+.side-menu button:hover {
+  background-color: var(--cor-menu-hover);
+}
+
+.side-menu .logout-btn:hover {
+  background-color: var(--cor-logout-hover);
+  color: white;
+}

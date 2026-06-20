@@ -1,0 +1,48 @@
+.lista-sessoes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.linha-sessao {
+  color: inherit;
+  text-decoration: none;
+  display: grid;
+  grid-template-columns: 3fr 1.4fr 2fr 1fr 1fr;
+  align-items: center;
+  padding: 12px 20px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: 0.2s;
+}
+
+.linha-sessao:hover {
+  background: rgba(0, 0, 0, 0.84);
+}
+
+.sessao-nome {
+  font-weight: 600;
+}
+
+.sessao-descricao {
+  font-size: 0.875rem;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+.sessao-jogo,
+.sessao-criador,
+.sessao-vagas {
+  opacity: 0.8;
+}
+
+.sessao-status {
+  justify-self: end;
+  opacity: 0.9;
+}
+
+.lista-sessoes-vazia {
+  opacity: 0.75;
+  padding: 12px 0;
+}
