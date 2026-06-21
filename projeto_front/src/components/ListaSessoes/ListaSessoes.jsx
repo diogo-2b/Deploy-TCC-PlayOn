@@ -1,4 +1,4 @@
-import "./ListaSessoes.css";
+import "./listaSessoes.css";
 
 const ListaSessoes = ({ sessoes }) => {
   if (!sessoes || sessoes.length === 0) {
