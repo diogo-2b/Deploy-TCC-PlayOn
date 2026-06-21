@@ -11,9 +11,13 @@ use Illuminate\Support\Facades\Storage;
 
 class EquipeController extends Controller
 {
+    // public function index()
+    // {
+    //     return EquipeResource::collection(Equipe::all());
+    // }
     public function index()
     {
-        return EquipeResource::collection(Equipe::all());
+        dd(config('cors.allowed_origins'));
     }
 
     public function show($id)
