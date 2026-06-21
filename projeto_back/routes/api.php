@@ -17,6 +17,12 @@ use Illuminate\Support\Facades\Route;
 // Rotas da API (v1)
 Route::prefix('v1')->group(function () {
 
+    Route::get('/cors-test', function () {
+        return response()->json([
+            'success' => true,
+        ])->header('Access-Control-Allow-Origin', '*');
+    });
+
 
 
     Route::apiResource('competicoes', CompeticaoController::class)->only(['index', 'show']);
@@ -52,7 +58,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/sessoes/{sessaoId}/jogadores', [SessaoJogadoresController::class, 'index']);
         Route::post('/sessoes/{sessaoId}/jogadores', [SessaoJogadoresController::class, 'store']);
         Route::delete('/sessoes/{sessaoId}/jogadores/{usuarioId}', [SessaoJogadoresController::class, 'destroy']);
-
     });
 
     Route::prefix('auth')->group(function () {
@@ -62,8 +67,8 @@ Route::prefix('v1')->group(function () {
         Route::post('refresh', [\App\Http\Controllers\Api\Auth\LoginController::class, 'refresh']);
     });
 
-        Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('usuarios', UsuarioController::class)
             ->only(['destroy']);
-        });
+    });
 });
