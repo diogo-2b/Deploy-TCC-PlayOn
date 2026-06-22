@@ -23,6 +23,18 @@ Route::prefix('v1')->group(function () {
         ]);
     });
 
+    Route::get('/raw-header-test', function () {
+        header('Access-Control-Allow-Origin: *');
+        header('X-Test-Header: abc123');
+
+        echo json_encode([
+            'ok' => true,
+            'headers' => headers_list(),
+        ]);
+
+        exit;
+    });
+
 
 
     Route::apiResource('competicoes', CompeticaoController::class)->only(['index', 'show']);
