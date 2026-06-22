@@ -7,9 +7,7 @@
 // return [
 //     'credentials' => $credentials,
 // ];
-?>
 
-<?php
 $json = env('FIREBASE_CREDENTIALS_JSON');
 return [
     'credentials' => $json
