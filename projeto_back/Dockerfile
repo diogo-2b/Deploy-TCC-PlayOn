@@ -14,6 +14,7 @@ WORKDIR /app
 COPY . .
 
 RUN composer install --no-dev --optimize-autoloader
+RUN php artisan about
 
 RUN php artisan config:clear
 

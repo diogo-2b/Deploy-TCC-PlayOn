@@ -17,16 +17,10 @@ use Illuminate\Support\Facades\Route;
 // Rotas da API (v1)
 Route::prefix('v1')->group(function () {
 
-    Route::get('/headers-debug', function () {
-        return response(
-            json_encode(['ok' => true]),
-            200,
-            [
-                'Content-Type' => 'application/json',
-                'Access-Control-Allow-Origin' => '*',
-                'X-Test-Header' => 'abc123',
-            ]
-        );
+    Route::get('/all-headers-test', function () {
+        return response()->json([
+            'headers' => headers_list(),
+        ]);
     });
 
 
