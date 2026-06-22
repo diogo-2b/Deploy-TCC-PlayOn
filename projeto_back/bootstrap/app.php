@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // garante CORS antes das rotas da API e força Accept: application/json
         $middleware->api(prepend: [
+            HandleCors::class,
             ForceJsonResponse::class
         ]);
         // habilita middleware stateful do Sanctum (CSRF/cookies) para SPAs

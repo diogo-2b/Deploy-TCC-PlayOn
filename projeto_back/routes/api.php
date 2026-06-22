@@ -23,6 +23,16 @@ Route::prefix('v1')->group(function () {
         ])->header('Access-Control-Allow-Origin', '*');
     });
 
+    Route::get('/headers-test', function () {
+        return response()->json([
+            'ok' => true,
+        ])->withHeaders([
+            'Access-Control-Allow-Origin' => 'https://playon-d.netlify.app',
+            'Access-Control-Allow-Methods' => '*',
+            'Access-Control-Allow-Headers' => '*',
+        ]);
+    });
+
 
 
     Route::apiResource('competicoes', CompeticaoController::class)->only(['index', 'show']);
