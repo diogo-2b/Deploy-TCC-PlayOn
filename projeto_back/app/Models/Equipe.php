@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Equipe extends Model
 {
@@ -24,6 +26,19 @@ class Equipe extends Model
     protected $casts = [
         'tipo' => 'boolean',
     ];
+
+    protected $appends = ['imagem_url'];
+
+    public function getImagemUrlAttribute(): string
+    {
+        if (empty($this->imagem)) {
+            return asset('imagens/foto.png');
+        }
+
+        return Str::startsWith($this->imagem, ['http://', 'https://'])
+            ? $this->imagem
+            : asset(Storage::url('equipes/' . $this->imagem));
+    }
 
     public function usuario(): BelongsTo
     {

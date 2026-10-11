@@ -121,6 +121,10 @@ const Login = () => {
     navigate("/cadastro");
   };
 
+  const handleRecuperarSenha = () => {
+    navigate("/recuperar-senha");
+  };
+
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black">
       {/* Background */}
@@ -209,6 +213,14 @@ const Login = () => {
           className="mt-4 w-full rounded-lg border border-white/10 py-3 text-gray-300 transition hover:bg-white/5"
         >
           Registre-se
+        </button>
+
+        <button
+          type="button"
+          onClick={handleRecuperarSenha}
+          className="mt-3 w-full text-sm text-gray-300 transition hover:text-yellow-400"
+        >
+          Esqueci minha senha
         </button>
       </div>
 

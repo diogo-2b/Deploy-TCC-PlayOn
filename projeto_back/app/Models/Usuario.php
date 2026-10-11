@@ -7,6 +7,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Usuario extends Authenticatable
 {
@@ -32,6 +34,19 @@ class Usuario extends Authenticatable
         'email_verified_at' => 'datetime',
         'is_admin' => 'boolean',
     ];
+
+    protected $appends = ['imagem_url'];
+
+    public function getImagemUrlAttribute(): string
+    {
+        if (empty($this->imagem)) {
+            return asset('imagens/foto.png');
+        }
+
+        return Str::startsWith($this->imagem, ['http://', 'https://'])
+            ? $this->imagem
+            : asset(Storage::url('usuarios/' . $this->imagem));
+    }
 
     public function equipes(): HasMany
     {

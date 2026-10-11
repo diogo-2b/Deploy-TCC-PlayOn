@@ -7,6 +7,7 @@ use App\Http\Requests\CompeticaoStoreRequest;
 use App\Http\Requests\CompeticaoUpdateRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
+use App\Services\CloudinaryService;
 
 class CompeticaoController extends Controller
 {
@@ -37,9 +38,14 @@ class CompeticaoController extends Controller
         return view('competicoes.create');
     }
 
-    public function store(CompeticaoStoreRequest $request)
+    public function store(CompeticaoStoreRequest $request, CloudinaryService $cloudinary)
     {
         $data = $request->validated();
+
+        if ($request->hasFile('imagem')) {
+            $data['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/competicoes');
+        }
+
         $competicao = Competicao::create($data);
 
         if ($request->wantsJson()) {
@@ -59,12 +65,16 @@ class CompeticaoController extends Controller
         dd("Competição não encontrada!!!");
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, CloudinaryService $cloudinary)
     {
         $updatedCompeticao = $request->all();
 
         $updatedCompeticao['tipo'] = $request->has('tipo');
         $updatedCompeticao['inscricao'] = $request->has('inscricao');
+
+        if ($request->hasFile('imagem')) {
+            $updatedCompeticao['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/competicoes');
+        }
 
         $competicaoAtual = Competicao::findOrFail($id);
         $competicaoAtual->update($updatedCompeticao);
@@ -99,4 +109,3 @@ class CompeticaoController extends Controller
         return redirect('/competicoes');
     }
 }
-

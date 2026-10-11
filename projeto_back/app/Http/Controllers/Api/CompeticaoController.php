@@ -7,7 +7,7 @@ use App\Models\Competicao;
 use App\Http\Requests\CompeticaoStoreRequest;
 use App\Http\Requests\CompeticaoUpdateRequest;
 use App\Http\Resources\CompeticaoResource;
-use Illuminate\Support\Facades\Storage;
+use App\Services\CloudinaryService;
 
 class CompeticaoController extends Controller
 {
@@ -21,12 +21,11 @@ class CompeticaoController extends Controller
         return new CompeticaoResource(Competicao::findOrFail($id));
     }
 
-    public function store(CompeticaoStoreRequest $request)
+    public function store(CompeticaoStoreRequest $request, CloudinaryService $cloudinary)
     {
         $data = $request->validated();
         if ($request->hasFile('imagem')) {
-            $path = $request->file('imagem')->store('competicoes', 'public');
-            $data['imagem'] = basename($path);
+            $data['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/competicoes');
         }
 
         $competicao = Competicao::create($data);
@@ -34,7 +33,7 @@ class CompeticaoController extends Controller
         return (new CompeticaoResource($competicao))->response()->setStatusCode(201);
     }
 
-    public function update(CompeticaoUpdateRequest $request, $id)
+    public function update(CompeticaoUpdateRequest $request, $id, CloudinaryService $cloudinary)
     {
         $competicao = Competicao::findOrFail($id);
         $user = $request->user();
@@ -47,8 +46,7 @@ class CompeticaoController extends Controller
 
         $data = $request->validated();
         if ($request->hasFile('imagem')) {
-            $path = $request->file('imagem')->store('competicoes', 'public');
-            $data['imagem'] = basename($path);
+            $data['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/competicoes');
         }
 
         $competicao->update($data);

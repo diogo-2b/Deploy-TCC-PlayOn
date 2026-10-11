@@ -7,6 +7,7 @@ use App\Http\Requests\EquipeStoreRequest;
 use App\Http\Requests\EquipeUpdateRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
+use App\Services\CloudinaryService;
 
 class EquipeController extends Controller
 {
@@ -37,9 +38,13 @@ class EquipeController extends Controller
         return view('equipes.create');
     }
 
-    public function store(EquipeStoreRequest $request)
+    public function store(EquipeStoreRequest $request, CloudinaryService $cloudinary)
     {
         $data = $request->validated();
+
+        if ($request->hasFile('imagem')) {
+            $data['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/equipes');
+        }
 
         $equipe = Equipe::create($data);
 
@@ -60,10 +65,14 @@ class EquipeController extends Controller
         dd("Equipe não encontrada!!!");
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, CloudinaryService $cloudinary)
     {
         $updatedEquipe = $request->all();
         $updatedEquipe['tipo'] = $request->has('tipo');
+
+        if ($request->hasFile('imagem')) {
+            $updatedEquipe['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/equipes');
+        }
 
         $equipeAtual = Equipe::findOrFail($id);
         $equipeAtual->update($updatedEquipe);

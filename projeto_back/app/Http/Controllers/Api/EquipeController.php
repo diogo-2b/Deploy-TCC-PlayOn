@@ -7,7 +7,7 @@ use App\Models\Equipe;
 use App\Http\Requests\EquipeStoreRequest;
 use App\Http\Requests\EquipeUpdateRequest;
 use App\Http\Resources\EquipeResource;
-use Illuminate\Support\Facades\Storage;
+use App\Services\CloudinaryService;
 
 class EquipeController extends Controller
 {
@@ -21,12 +21,11 @@ class EquipeController extends Controller
         return new EquipeResource(Equipe::findOrFail($id));
     }
 
-    public function store(EquipeStoreRequest $request)
+    public function store(EquipeStoreRequest $request, CloudinaryService $cloudinary)
     {
         $data = $request->validated();
         if ($request->hasFile('imagem')) {
-            $path = $request->file('imagem')->store('equipes', 'public');
-            $data['imagem'] = basename($path);
+            $data['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/equipes');
         }
 
         $equipe = Equipe::create($data);
@@ -34,7 +33,7 @@ class EquipeController extends Controller
         return (new EquipeResource($equipe))->response()->setStatusCode(201);
     }
 
-    public function update(EquipeUpdateRequest $request, $id)
+    public function update(EquipeUpdateRequest $request, $id, CloudinaryService $cloudinary)
     {
         $equipe = Equipe::findOrFail($id);
         $user = $request->user();
@@ -47,8 +46,7 @@ class EquipeController extends Controller
 
         $data = $request->validated();
         if ($request->hasFile('imagem')) {
-            $path = $request->file('imagem')->store('equipes', 'public');
-            $data['imagem'] = basename($path);
+            $data['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/equipes');
         }
 
         $equipe->update($data);

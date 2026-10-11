@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class UsuarioResource extends JsonResource
 {
@@ -16,7 +17,9 @@ class UsuarioResource extends JsonResource
     public function toArray(Request $request): array
     {
         if (!empty($this->imagem)) {
-            $imagemUrl = asset(Storage::url('usuarios/' . $this->imagem));
+            $imagemUrl = Str::startsWith($this->imagem, ['http://', 'https://'])
+                ? $this->imagem
+                : asset(Storage::url('usuarios/' . $this->imagem));
         } else {
             $imagemUrl = asset('imagens/foto.png');
         }

@@ -20,7 +20,9 @@ class CompeticaoResource extends JsonResource
 
         $imagemUrl = null;
         if (!empty($this->imagem)) {
-            $imagemUrl = asset(Storage::url('competicoes/' . $this->imagem));
+            $imagemUrl = Str::startsWith($this->imagem, ['http://', 'https://'])
+                ? $this->imagem
+                : asset(Storage::url('competicoes/' . $this->imagem));
         } else {
             $imagemUrl = asset('imagens/foto.png');
         }
@@ -31,7 +33,7 @@ class CompeticaoResource extends JsonResource
             'imagem_url' => $imagemUrl,
             'media' => $this->whenLoaded('media', function () {
                 return $this->media->map(function ($media) {
-                    if (Str::contains($media->source, 'http')) {
+                    if (Str::startsWith($media->source, ['http://', 'https://'])) {
                         return $media->source;
                     }
 

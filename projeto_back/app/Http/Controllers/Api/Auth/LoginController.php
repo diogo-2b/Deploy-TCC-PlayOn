@@ -96,6 +96,50 @@ class LoginController {
         }
     }
 
+    public function updatePasswordWithFirebase(Request $request, FirebaseService $firebase): JsonResponse
+    {
+        try {
+            $data = $request->validate([
+                'firebase_token' => 'required|string',
+                'password' => 'required|string|min:6',
+            ]);
+
+            $verifiedToken = $firebase->verifyToken($data['firebase_token']);
+            $claims = $verifiedToken->claims();
+            $email = $claims->get('email');
+            $firebaseUid = $claims->get('sub');
+
+            if (!$email || !$firebaseUid || !$claims->get('email_verified')) {
+                return response()->json([
+                    'message' => 'Não foi possível validar a conta do Firebase.'
+                ], 401);
+            }
+
+            $user = Usuario::where('email', $email)
+                ->where('firebase_uid', $firebaseUid)
+                ->first();
+
+            if (!$user) {
+                return response()->json([
+                    'message' => 'Conta não encontrada.'
+                ], 404);
+            }
+
+            $user->password = Hash::make($data['password']);
+            $user->save();
+
+            return response()->json([
+                'message' => 'Senha atualizada com sucesso.'
+            ]);
+        } catch (Exception $error) {
+            return $this->errorHandler(
+                'Token do Firebase inválido ou expirado.',
+                $error,
+                401
+            );
+        }
+    }
+
     public function logout(Request $request)
     {
         $user = $request->user();

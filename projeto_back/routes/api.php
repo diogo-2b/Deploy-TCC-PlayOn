@@ -75,6 +75,7 @@ Route::prefix('v1')->group(function () {
     Route::prefix('auth')->group(function () {
         Route::post('login', [\App\Http\Controllers\Api\Auth\LoginController::class, 'login']);
         Route::post('login/firebase', [\App\Http\Controllers\Api\Auth\LoginController::class, 'loginWithFirebase']);
+        Route::post('password/firebase', [\App\Http\Controllers\Api\Auth\LoginController::class, 'updatePasswordWithFirebase']);
         Route::post('logout', [\App\Http\Controllers\Api\Auth\LoginController::class, 'logout']);
         Route::post('refresh', [\App\Http\Controllers\Api\Auth\LoginController::class, 'refresh']);
     });

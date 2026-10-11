@@ -9,6 +9,7 @@ use App\Http\Requests\UsuarioStoreRequest;
 use App\Http\Requests\UsuarioUpdateRequest;
 use App\Http\Resources\UsuarioResource;
 use App\Services\FirebaseService;
+use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 class UsuarioController extends Controller
@@ -23,13 +24,12 @@ class UsuarioController extends Controller
         return new UsuarioResource(Usuario::findOrFail($id));
     }
 
-    public function store(UsuarioStoreRequest $request)
+    public function store(UsuarioStoreRequest $request, CloudinaryService $cloudinary)
     {
         $data = $request->validated();
 
         if ($request->hasFile('imagem')) {
-            $path = $request->file('imagem')->store('usuarios', 'public');
-            $data['imagem'] = basename($path);
+            $data['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/usuarios');
         }
 
         if (isset($data['password'])) {
@@ -41,7 +41,11 @@ class UsuarioController extends Controller
         return (new UsuarioResource($usuario))->response()->setStatusCode(201);
     }
 
-    public function storeFromFirebase(FirebaseUsuarioStoreRequest $request, FirebaseService $firebase)
+    public function storeFromFirebase(
+        FirebaseUsuarioStoreRequest $request,
+        FirebaseService $firebase,
+        CloudinaryService $cloudinary
+    )
     {
         $data = $request->validated();
 
@@ -82,8 +86,7 @@ class UsuarioController extends Controller
         ];
 
         if ($request->hasFile('imagem')) {
-            $path = $request->file('imagem')->store('usuarios', 'public');
-            $payload['imagem'] = basename($path);
+            $payload['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/usuarios');
         }
 
         if ($usuario) {
@@ -101,15 +104,13 @@ class UsuarioController extends Controller
         ], 201);
     }
 
-    public function update(UsuarioUpdateRequest $request, $id)
+    public function update(UsuarioUpdateRequest $request, $id, CloudinaryService $cloudinary)
     {
         $usuario = Usuario::findOrFail($id);
         $data = $request->validated();
 
-        // Processar upload de imagem se houver
         if ($request->hasFile('imagem')) {
-            $path = $request->file('imagem')->store('usuarios', 'public');
-            $data['imagem'] = basename($path);
+            $data['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/usuarios');
         }
 
         if (isset($data['password'])) {

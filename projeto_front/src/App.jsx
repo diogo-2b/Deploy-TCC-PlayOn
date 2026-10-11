@@ -7,6 +7,7 @@ import SessoesProvider from "./context/SessoesProvider.jsx";
 import Index from "./pages/index.jsx";
 import Login from "./pages/login.jsx";
 import CadastrarUsuario from "./pages/cadastrarUsuario.jsx";
+import RecuperarSenha from "./pages/recuperarSenha.jsx";
 import Home from "./pages/home.jsx";
 import ListaEquipes from "./pages/listaEquipes.jsx";
 import ListaCompeticao from "./pages/listaCompeticao.jsx";
@@ -34,6 +35,10 @@ const App = () => {
                     <Route path="/" element={<Index />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/cadastro" element={<CadastrarUsuario />} />
+                    <Route
+                      path="/recuperar-senha"
+                      element={<RecuperarSenha />}
+                    />
 
                     <Route
                       path="/home"

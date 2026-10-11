@@ -4,6 +4,8 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class EquipeResource extends JsonResource
 {
@@ -16,7 +18,9 @@ class EquipeResource extends JsonResource
     {
         $imagemUrl = null;
         if (!empty($this->imagem)) {
-            $imagemUrl = asset(\Illuminate\Support\Facades\Storage::url('equipes/' . $this->imagem));
+            $imagemUrl = Str::startsWith($this->imagem, ['http://', 'https://'])
+                ? $this->imagem
+                : asset(Storage::url('equipes/' . $this->imagem));
         } else {
             // fallback para imagem padrão embutida no public
             $imagemUrl = asset('imagens/foto.png');

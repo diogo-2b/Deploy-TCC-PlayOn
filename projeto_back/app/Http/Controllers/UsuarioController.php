@@ -7,6 +7,7 @@ use App\Http\Requests\UsuarioStoreRequest;
 use App\Http\Requests\UsuarioUpdateRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
+use App\Services\CloudinaryService;
 
 class UsuarioController extends Controller
 {
@@ -37,9 +38,15 @@ class UsuarioController extends Controller
         return view('usuarios.create');
     }
 
-    public function store(UsuarioStoreRequest $request)
+    public function store(UsuarioStoreRequest $request, CloudinaryService $cloudinary)
     {
-        $usuario = Usuario::create($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('imagem')) {
+            $data['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/usuarios');
+        }
+
+        $usuario = Usuario::create($data);
 
         if ($request->wantsJson()) {
             return response()->json($usuario, 201);
@@ -59,9 +66,13 @@ class UsuarioController extends Controller
     }
 
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, CloudinaryService $cloudinary)
     {
         $updatedUsuario = $request->all();
+
+        if ($request->hasFile('imagem')) {
+            $updatedUsuario['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/usuarios');
+        }
 
         $usuarioAtual = Usuario::findOrFail($id);
         $usuarioAtual->update($updatedUsuario);
