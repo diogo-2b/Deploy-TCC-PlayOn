@@ -22,7 +22,8 @@ class Competicao extends Model
         'imagem',
         'dono',
         'tipo',
-        'inscricao'
+        'inscricao',
+        'jogo_id',
     ];
 
     protected $casts = [
@@ -70,4 +71,11 @@ class Competicao extends Model
         return $this->hasMany(Participantes_Competicoes::class, 'id_competicao', 'id')
             ->where('tipo_participante', 'equipe');
     }
+
+    public function jogo(): BelongsTo
+    {
+        return $this->belongsTo(Jogo::class, 'jogo_id');
+    }
+
+
 }

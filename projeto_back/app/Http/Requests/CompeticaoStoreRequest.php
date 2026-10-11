@@ -20,6 +20,7 @@ class CompeticaoStoreRequest extends FormRequest
             'dono' => 'required|integer',
             'tipo' => 'nullable|boolean',
             'inscricao' => 'nullable|boolean',
+            'igdb_id' => 'nullable|integer|min:1',
         ];
     }
 
