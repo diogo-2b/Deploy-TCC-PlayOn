@@ -11,21 +11,39 @@ import LightPillar from "../components/LightPillar/LightPillar.jsx";
 import axiosClient from "../utils/axios-client";
 import { auth } from "../firebase";
 
-const traduzirErroFirebase = (error) => {
+const traduzirErro = (error) => {
   const mensagens = {
-    "auth/expired-action-code": "Este código expirou. Solicite um novo e-mail.",
-    "auth/invalid-action-code": "O código é inválido ou já foi utilizado.",
+    "auth/expired-action-code":
+      "O código expirou. Solicite um novo código de recuperação.",
+    "auth/invalid-action-code":
+      "O código informado é inválido ou já foi utilizado.",
+    "auth/invalid-email": "O e-mail informado é inválido.",
     "auth/user-disabled": "Esta conta está desativada.",
     "auth/user-not-found": "Nenhuma conta foi encontrada para este e-mail.",
     "auth/weak-password": "A senha precisa ter pelo menos 6 caracteres.",
-    "auth/invalid-email": "O e-mail informado é inválido.",
   };
 
   return (
     mensagens[error?.code] ||
+    error?.response?.data?.message ||
     error?.message ||
     "Não foi possível concluir a recuperação da senha."
   );
+};
+
+const extrairCodigo = (valor) => {
+  const valorInformado = valor.trim();
+
+  if (!valorInformado) {
+    return "";
+  }
+
+  try {
+    const url = new URL(valorInformado);
+    return url.searchParams.get("oobCode") || valorInformado;
+  } catch {
+    return valorInformado;
+  }
 };
 
 const RecuperarSenha = () => {
@@ -41,85 +59,91 @@ const RecuperarSenha = () => {
 
   useEffect(() => {
     const parametros = new URLSearchParams(window.location.search);
-    const codigoRecebido = parametros.get("oobCode");
+    const codigoDoFirebase = parametros.get("oobCode");
     const modo = parametros.get("mode");
 
-    if (modo !== "resetPassword" || !codigoRecebido) {
+    if (modo !== "resetPassword" || !codigoDoFirebase) {
       return;
     }
 
-    setCodigo(codigoRecebido);
-    setCarregando(true);
-    verifyPasswordResetCode(auth, codigoRecebido)
-      .then((emailRecuperacao) => {
-        setEmail(emailRecuperacao);
+    const validarLinkRecebido = async () => {
+      try {
+        setCarregando(true);
+        const emailDaConta = await verifyPasswordResetCode(
+          auth,
+          codigoDoFirebase,
+        );
+        setCodigo(codigoDoFirebase);
+        setEmail(emailDaConta);
         setEtapa("senha");
-        setMensagem("Código confirmado. Crie sua nova senha.");
-      })
-      .catch((error) => {
-        setErro(traduzirErroFirebase(error));
-      })
-      .finally(() => {
+        setMensagem("E-mail confirmado. Informe sua nova senha.");
+      } catch (error) {
+        setErro(traduzirErro(error));
+      } finally {
         setCarregando(false);
-      });
+      }
+    };
+
+    validarLinkRecebido();
   }, []);
 
   const limparMensagens = () => {
-    setErro("");
     setMensagem("");
+    setErro("");
   };
 
-  const enviarEmailRecuperacao = async (evento) => {
+  const enviarCodigo = async (evento) => {
     evento.preventDefault();
     limparMensagens();
 
-    if (!email.trim()) {
-      setErro("Informe seu e-mail.");
+    const emailInformado = email.trim();
+    if (!emailInformado) {
+      setErro("Informe o e-mail cadastrado.");
       return;
     }
 
     try {
       setCarregando(true);
-      await sendPasswordResetEmail(auth, email.trim(), {
+      await sendPasswordResetEmail(auth, emailInformado, {
         url: `${window.location.origin}/recuperar-senha`,
         handleCodeInApp: true,
       });
+      setEtapa("codigo");
       setMensagem(
-        "Enviamos um link de recuperação para seu e-mail. Abra o link para criar uma nova senha.",
+        "Enviamos um e-mail com o código de recuperação. Cole aqui o código ou o link recebido.",
       );
     } catch (error) {
-      setErro(traduzirErroFirebase(error));
+      setErro(traduzirErro(error));
     } finally {
       setCarregando(false);
     }
   };
 
-  const confirmarCodigo = async (evento) => {
+  const validarCodigo = async (evento) => {
     evento.preventDefault();
     limparMensagens();
 
-    if (!codigo.trim()) {
-      setErro("Cole o código recebido no link de recuperação.");
+    const codigoExtraido = extrairCodigo(codigo);
+    if (!codigoExtraido) {
+      setErro("Informe o código recebido no e-mail.");
       return;
     }
 
     try {
       setCarregando(true);
-      const emailRecuperacao = await verifyPasswordResetCode(
-        auth,
-        codigo.trim(),
-      );
-      setEmail(emailRecuperacao);
+      const emailDaConta = await verifyPasswordResetCode(auth, codigoExtraido);
+      setCodigo(codigoExtraido);
+      setEmail(emailDaConta);
       setEtapa("senha");
-      setMensagem("Código confirmado. Crie sua nova senha.");
+      setMensagem("Código confirmado. Informe sua nova senha.");
     } catch (error) {
-      setErro(traduzirErroFirebase(error));
+      setErro(traduzirErro(error));
     } finally {
       setCarregando(false);
     }
   };
 
-  const atualizarSenha = async (evento) => {
+  const salvarNovaSenha = async (evento) => {
     evento.preventDefault();
     limparMensagens();
 
@@ -135,26 +159,28 @@ const RecuperarSenha = () => {
 
     try {
       setCarregando(true);
-      await confirmPasswordReset(auth, codigo.trim(), senha);
+
+      await confirmPasswordReset(auth, codigo, senha);
+
       const credenciais = await signInWithEmailAndPassword(auth, email, senha);
       const firebaseToken = await credenciais.user.getIdToken(true);
+
       await axiosClient.post("/auth/password/firebase", {
         firebase_token: firebaseToken,
         password: senha,
       });
+
       await signOut(auth).catch(() => {});
-      setMensagem("Senha atualizada com sucesso. Você já pode fazer login.");
       setSenha("");
       setConfirmacaoSenha("");
+      setMensagem("Senha atualizada com sucesso. Você já pode fazer login.");
       setTimeout(() => navigate("/login"), 1500);
     } catch (error) {
-      setErro(traduzirErroFirebase(error));
+      setErro(traduzirErro(error));
     } finally {
       setCarregando(false);
     }
   };
-
-  const voltar = () => navigate("/login");
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black">
@@ -175,11 +201,11 @@ const RecuperarSenha = () => {
         />
       </div>
 
-      <div className="relative z-10 mx-4 w-full max-w-md rounded-2xl border border-white/10 bg-black/40 p-8 shadow-2xl backdrop-blur-md">
+      <section className="relative z-10 mx-4 w-full max-w-md rounded-2xl border border-white/10 bg-black/40 p-8 shadow-2xl backdrop-blur-md">
         <button
           type="button"
-          onClick={voltar}
-          className="mb-4 border-2 border-[#c09318] px-3 py-2 rounded-md font-bold text-[#c09318]"
+          onClick={() => navigate("/login")}
+          className="mb-4 rounded-md border-2 border-[#c09318] px-3 py-2 font-bold text-[#c09318]"
         >
           ← Voltar
         </button>
@@ -190,9 +216,10 @@ const RecuperarSenha = () => {
         <h2 className="mb-6 text-center text-gray-300">Recuperar senha</h2>
 
         {etapa === "email" && (
-          <form onSubmit={enviarEmailRecuperacao} className="flex flex-col gap-4">
+          <form onSubmit={enviarCodigo} className="flex flex-col gap-4">
             <p className="text-sm text-gray-300">
-              Informe seu e-mail cadastrado para receber o link de recuperação.
+              Informe seu e-mail cadastrado para receber o código de
+              recuperação.
             </p>
             <label htmlFor="email" className="text-sm text-gray-300">
               E-mail
@@ -202,57 +229,62 @@ const RecuperarSenha = () => {
               type="email"
               value={email}
               onChange={(evento) => setEmail(evento.target.value)}
-              className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-yellow-400"
               autoComplete="email"
               required
+              className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-yellow-400"
             />
             <button
               type="submit"
               disabled={carregando}
-              className="mt-2 rounded-lg bg-yellow-600 py-3 font-semibold text-white transition hover:bg-yellow-500 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-lg bg-yellow-600 py-3 font-semibold text-white transition hover:bg-yellow-500 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {carregando ? "Enviando..." : "Enviar link de recuperação"}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                limparMensagens();
-                setEtapa("codigo");
-              }}
-              className="text-sm text-gray-300 transition hover:text-yellow-400"
-            >
-              Já tenho um código
+              {carregando ? "Enviando..." : "Enviar código"}
             </button>
           </form>
         )}
 
         {etapa === "codigo" && (
-          <form onSubmit={confirmarCodigo} className="flex flex-col gap-4">
+          <form onSubmit={validarCodigo} className="flex flex-col gap-4">
+            <p className="text-sm text-gray-300">
+              Verifique sua caixa de entrada e cole abaixo o código do e-mail
+              ou o link completo recebido.
+            </p>
             <label htmlFor="codigo" className="text-sm text-gray-300">
-              Código do link de recuperação
+              Código de recuperação
             </label>
             <input
               id="codigo"
               type="text"
               value={codigo}
               onChange={(evento) => setCodigo(evento.target.value)}
-              className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-yellow-400"
+              autoComplete="one-time-code"
               required
+              className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-yellow-400"
             />
             <button
               type="submit"
               disabled={carregando}
-              className="rounded-lg bg-yellow-600 py-3 font-semibold text-white transition hover:bg-yellow-500 disabled:opacity-60"
+              className="rounded-lg bg-yellow-600 py-3 font-semibold text-white transition hover:bg-yellow-500 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {carregando ? "Validando..." : "Validar código"}
+              {carregando ? "Validando..." : "Confirmar código"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                limparMensagens();
+                setEtapa("email");
+              }}
+              className="text-sm text-gray-300 transition hover:text-yellow-400"
+            >
+              Solicitar outro código
             </button>
           </form>
         )}
 
         {etapa === "senha" && (
-          <form onSubmit={atualizarSenha} className="flex flex-col gap-4">
+          <form onSubmit={salvarNovaSenha} className="flex flex-col gap-4">
             <p className="text-sm text-gray-300">
-              Defina uma nova senha para a conta {email}.
+              Crie uma nova senha para a conta {email}.
             </p>
             <label htmlFor="senha" className="text-sm text-gray-300">
               Nova senha
@@ -262,10 +294,10 @@ const RecuperarSenha = () => {
               type="password"
               value={senha}
               onChange={(evento) => setSenha(evento.target.value)}
-              className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-yellow-400"
               autoComplete="new-password"
               minLength={6}
               required
+              className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-yellow-400"
             />
             <label
               htmlFor="confirmacaoSenha"
@@ -278,24 +310,24 @@ const RecuperarSenha = () => {
               type="password"
               value={confirmacaoSenha}
               onChange={(evento) => setConfirmacaoSenha(evento.target.value)}
-              className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-yellow-400"
               autoComplete="new-password"
               minLength={6}
               required
+              className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-yellow-400"
             />
             <button
               type="submit"
               disabled={carregando}
-              className="rounded-lg bg-yellow-600 py-3 font-semibold text-white transition hover:bg-yellow-500 disabled:opacity-60"
+              className="rounded-lg bg-yellow-600 py-3 font-semibold text-white transition hover:bg-yellow-500 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {carregando ? "Atualizando..." : "Atualizar senha"}
+              {carregando ? "Salvando..." : "Salvar nova senha"}
             </button>
           </form>
         )}
 
         {mensagem && <p className="mt-4 text-sm text-green-400">{mensagem}</p>}
         {erro && <p className="mt-4 text-sm text-red-400">{erro}</p>}
-      </div>
+      </section>
     </main>
   );
 };

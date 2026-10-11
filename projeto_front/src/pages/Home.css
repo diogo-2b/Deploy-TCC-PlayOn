@@ -296,16 +296,41 @@ select option:checked {
 }
 
 /* CARROSSEL */
+.carrossel-container {
+  position: relative;
+  padding: 0 42px;
+}
+
 .carrossel {
-  display: flex;
-  align-items: stretch;
-  overflow-x: auto;
-  overflow-y: visible;
-  gap: 15px;
+  width: 100%;
   padding-bottom: 10px;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+}
+
+.carrossel .swiper-wrapper {
+  align-items: stretch;
+}
+
+.carrossel .swiper-slide {
+  width: 200px;
+  height: auto;
+  display: flex;
+}
+
+.carrossel .swiper-slide .card {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  flex: 1 1 auto;
+}
+
+.carrossel .swiper-button-prev,
+.carrossel .swiper-button-next {
+  color: var(--cor-destaque);
+}
+
+.carrossel .swiper-button-prev::after,
+.carrossel .swiper-button-next::after {
+  font-size: 24px;
 }
 
 .lista-grid {
@@ -434,15 +459,15 @@ select option:checked {
   }
 
   .carrossel {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    overflow-x: hidden;
+    overflow: hidden;
   }
 
-  .card {
-    width: 100%;
-    max-width: none;
+  .carrossel-container {
+    padding: 0 28px;
+  }
+
+  .carrossel .swiper-slide {
+    width: 160px;
   }
 
   .card img {
