@@ -19,6 +19,12 @@ const CadastrarCompeticao = () => {
   const [mensagem, setMensagem] = useState("");
   const [imagemPreview, setImagemPreview] = useState(null);
 
+  const [buscaJogo, setBuscaJogo] = useState("");
+  const [jogosEncontrados, setJogosEncontrados] = useState([]);
+  const [jogoSelecionado, setJogoSelecionado] = useState(null);
+  const [carregandoJogos, setCarregandoJogos] = useState(false);
+  const [erroBuscaJogo, setErroBuscaJogo] = useState("");
+
   const navigate = useNavigate();
   const { loadCompeticoes } = useCompeticoes();
 
@@ -32,6 +38,46 @@ const CadastrarCompeticao = () => {
     };
   }, [imagemPreview]);
 
+  useEffect(() => {
+  const termo = buscaJogo.trim();
+  if (termo.length < 2 || jogoSelecionado) {
+    setJogosEncontrados([]);
+    setErroBuscaJogo("");
+    setCarregandoJogos(false);
+    return;
+  }
+  let cancelado = false;
+  const timer = setTimeout(async () => {
+    setCarregandoJogos(true);
+    setErroBuscaJogo("");
+    try {
+      const response = await axiosClient.get("/jogos", {
+        params: { search: termo },
+      });
+      if (!cancelado) {
+        setJogosEncontrados(
+          Array.isArray(response.data) ? response.data : []
+        );
+      }
+    } catch (error) {
+      if (!cancelado) {
+        setJogosEncontrados([]);
+        setErroBuscaJogo(
+          "Não foi possível pesquisar jogos. Tente novamente."
+        );
+      }
+    } finally {
+      if (!cancelado) {
+        setCarregandoJogos(false);
+      }
+    }
+  }, 350);
+  return () => {
+    cancelado = true;
+    clearTimeout(timer);
+  };
+}, [buscaJogo, jogoSelecionado]);
+
   const validarFormulario = () => {
     const novosErros = {};
     if (!nome.trim()) novosErros.nome = "O nome é obrigatório.";
@@ -39,6 +85,9 @@ const CadastrarCompeticao = () => {
     if (!tipo.trim()) novosErros.tipo = "O tipo é obrigatório.";
     if (!inscricao.trim())
       novosErros.inscricao = "O tipo de inscrição é obrigatório.";
+    if (!jogoSelecionado) {
+      novosErros.jogo = "Selecione um jogo do catálogo.";
+    }
     return novosErros;
   };
 
@@ -58,6 +107,10 @@ const CadastrarCompeticao = () => {
       formData.append("nome", nome);
       formData.append("descricao", descricao);
       formData.append("dono", dono ?? "");
+      formData.append(
+        "igdb_id",
+        String(jogoSelecionado.igdb_id)
+      );
       if (tipo === "publico") formData.append("tipo", "1");
       if (imagem) formData.append("imagem", imagem);
 
@@ -150,6 +203,155 @@ const CadastrarCompeticao = () => {
               <div className="text-red-500 text-sm mt-1">{erros.descricao}</div>
             )}
           </div>
+
+          // Campo de busca de jogo
+          
+<div className="mb-4">
+  <label
+    htmlFor="buscaJogo"
+    className="block text-sm text-gray-300 mb-2"
+  >
+    Jogo da competição:
+  </label>
+
+  <input
+    type="text"
+    id="buscaJogo"
+    value={buscaJogo}
+    autoComplete="off"
+    placeholder="Pesquise um jogo, ex.: Valorant"
+    onChange={(e) => {
+      setBuscaJogo(e.target.value);
+      setJogoSelecionado(null);
+    }}
+    className={`w-full p-3 bg-white/5 text-white text-sm rounded-md border outline-none placeholder:text-gray-400 ${
+      erros.jogo
+        ? "border-red-500"
+        : "border-white/10 focus:border-[#c09318] focus:ring-1 focus:ring-[#c09318]"
+    }`}
+  />
+
+  {carregandoJogos && (
+    <p className="mt-2 text-sm text-gray-300">
+      Pesquisando jogos...
+    </p>
+  )}
+
+  {erroBuscaJogo && (
+    <p className="mt-2 text-sm text-red-400">
+      {erroBuscaJogo}
+    </p>
+  )}
+
+  {!carregandoJogos &&
+    !erroBuscaJogo &&
+    buscaJogo.trim().length >= 2 &&
+    !jogoSelecionado &&
+    jogosEncontrados.length === 0 && (
+      <p className="mt-2 text-sm text-gray-400">
+        Nenhum jogo encontrado.
+      </p>
+    )}
+
+  {jogosEncontrados.length > 0 && !jogoSelecionado && (
+    <div className="mt-2 max-h-80 overflow-y-auto rounded-lg border border-white/10 bg-black/90">
+      {jogosEncontrados.map((jogo) => (
+        <button
+          key={jogo.igdb_id}
+          type="button"
+          onClick={() => {
+            setJogoSelecionado(jogo);
+            setBuscaJogo(jogo.nome);
+            setJogosEncontrados([]);
+            setErros((prev) => {
+              const novos = { ...prev };
+              delete novos.jogo;
+              return novos;
+            });
+          }}
+          className="flex w-full items-center gap-3 border-b border-white/10 p-3 text-left transition hover:bg-white/10"
+        >
+          {jogo.capa_url ? (
+            <img
+              src={jogo.capa_url}
+              alt={`Capa de ${jogo.nome}`}
+              className="h-20 w-14 rounded object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex h-20 w-14 items-center justify-center rounded bg-white/10">
+              <span className="text-xs text-gray-400">
+                Sem capa
+              </span>
+            </div>
+          )}
+
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-white">
+              {jogo.nome}
+            </p>
+
+            {jogo.plataformas?.length > 0 && (
+              <p className="mt-1 text-xs text-gray-400">
+                {jogo.plataformas.join(", ")}
+              </p>
+            )}
+          </div>
+
+          <span className="text-sm text-[#daa520]">
+            Selecionar
+          </span>
+        </button>
+      ))}
+    </div>
+  )}
+
+  {jogoSelecionado && (
+    <div className="mt-3 flex items-center gap-3 rounded-lg border border-[#c09318] bg-black/40 p-3">
+      {jogoSelecionado.capa_url && (
+        <img
+          src={jogoSelecionado.capa_url}
+          alt={`Capa de ${jogoSelecionado.nome}`}
+          className="h-20 w-14 rounded object-cover"
+        />
+      )}
+
+      <div className="min-w-0 flex-1">
+        <p className="text-sm text-gray-400">
+          Jogo selecionado
+        </p>
+
+        <p className="font-semibold text-white">
+          {jogoSelecionado.nome}
+        </p>
+
+        <p className="text-xs text-gray-400">
+          ID IGDB: {jogoSelecionado.igdb_id}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => {
+          setJogoSelecionado(null);
+          setBuscaJogo("");
+        }}
+        className="rounded border border-white/20 px-3 py-2 text-sm text-white hover:bg-white/10"
+      >
+        Trocar
+      </button>
+    </div>
+  )}
+
+  {erros.jogo && (
+    <p className="mt-1 text-sm text-red-500">
+      {erros.jogo}
+    </p>
+  )}
+</div>
+
+
+          // Campo de Tipo de Competição
 
           <div className="mb-4">
             <label htmlFor="tipo" className="block text-sm text-gray-300 mb-2">
