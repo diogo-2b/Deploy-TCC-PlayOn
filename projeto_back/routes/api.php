@@ -7,10 +7,10 @@ use App\Http\Controllers\Api\ParticipantesEquipesController;
 use App\Http\Controllers\Api\ParticipantesCompeticoesController;
 use App\Http\Controllers\Api\SessaoController;
 use App\Http\Controllers\Api\SessaoJogadoresController;
+use App\Http\Controllers\Api\JogoController;
 use App\Services\FirebaseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
 
 
 
@@ -34,6 +34,8 @@ Route::prefix('v1')->group(function () {
 
         exit;
     });
+
+    Route::get('/jogos', [JogoController::class, 'search']);
 
 
 
