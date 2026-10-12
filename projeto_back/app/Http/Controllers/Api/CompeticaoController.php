@@ -15,7 +15,7 @@ class CompeticaoController extends Controller
 {
     public function index()
     {
-        return CompeticaoResource::collection(Competicao::with('jogo')->get());
+        return CompeticaoResource::collection(Competicao::all());
     }
 
     public function show($id)
