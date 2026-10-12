@@ -14,7 +14,7 @@ class SessaoController extends Controller
     {
         return response()->json(
             Sessao::with('criador')
-                ->with('jogoRelacionado')
+                ->with('jogo')
                 ->with('jogadores')
                 ->withCount('jogadores')
                 ->get()
@@ -25,7 +25,7 @@ class SessaoController extends Controller
     {
         return response()->json(
             Sessao::with('criador')
-                ->with('jogoRelacionado')
+                ->with('jogo')
                 ->with('jogadores')
                 ->withCount('jogadores')
                 ->findOrFail($id)
@@ -70,7 +70,7 @@ class SessaoController extends Controller
         ]);
 
         $sessao->load('criador', 'jogadores');
-        $sessao->load('jogoRelacionado');
+        $sessao->load('jogo');
 
         return response()->json(
             $sessao->loadCount('jogadores'),
@@ -117,7 +117,7 @@ class SessaoController extends Controller
         });
 
         return response()->json(
-            $sessao->fresh()->load('criador', 'jogoRelacionado', 'jogadores')->loadCount('jogadores')
+            $sessao->fresh()->load('criador', 'jogo', 'jogadores')->loadCount('jogadores')
         );
     }
 

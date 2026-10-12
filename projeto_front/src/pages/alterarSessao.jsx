@@ -91,7 +91,8 @@ const AlterarSessao = () => {
         setSessao(data);
         setTitulo(data?.titulo || "");
         setDescricao(data?.descricao || "");
-        const jogoData = data?.jogoRelacionado || null;
+        const jogoData =
+          data?.jogo || data?.jogoRelacionado || data?.jogo_relacionado || null;
         setJogoSelecionado(jogoData);
         setBuscaJogo(jogoData?.nome || "");
         setMaxJogadores(data?.max_jogadores || 5);
@@ -146,7 +147,7 @@ const AlterarSessao = () => {
   }
 
   const criadorId = Number(sessao?.criador_id ?? sessao?.criador?.id ?? 0);
-  const jogoRelacionado = sessao?.jogoRelacionado || null;
+  const jogoRelacionado = sessao?.jogo || sessao?.jogoRelacionado || null;
   const isOwner = criadorId > 0 && criadorId === usuarioLogadoId;
   const minhaInscricao = jogadores.some(
     (jogador) => Number(jogador.id) === usuarioLogadoId,

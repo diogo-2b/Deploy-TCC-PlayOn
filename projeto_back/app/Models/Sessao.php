@@ -47,7 +47,7 @@ class Sessao extends Model
         )->withTimestamps();
     }
 
-    public function jogoRelacionado(): BelongsTo
+    public function jogo(): BelongsTo
     {
         return $this->belongsTo(Jogo::class, 'jogo_id');
     }

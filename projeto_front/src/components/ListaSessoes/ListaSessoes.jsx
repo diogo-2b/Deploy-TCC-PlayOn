@@ -20,7 +20,7 @@ const ListaSessoes = ({ sessoes }) => {
             )}
           </div>
           <div className="sessao-jogo">
-            {sessao.jogoRelacionado?.nome || "Jogo não informado"}
+            {sessao.jogo?.nome || "Jogo não informado"}
           </div>
           <div className="sessao-criador">
             {sessao.criador_nome
