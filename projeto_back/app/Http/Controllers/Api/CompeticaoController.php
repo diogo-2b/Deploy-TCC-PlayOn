@@ -20,7 +20,13 @@ class CompeticaoController extends Controller
 
     public function show($id)
     {
-        return new CompeticaoResource(Competicao::with('jogo')->findOrFail($id));
+        $competicao = Competicao::findOrFail($id);
+
+        if ($competicao->jogo_id) {
+            $competicao->load('jogo');
+        }
+
+        return new CompeticaoResource($competicao);
     }
 
     public function store(CompeticaoStoreRequest $request, CloudinaryService $cloudinary)
@@ -48,7 +54,7 @@ class CompeticaoController extends Controller
             return Competicao::create($data);
         });
 
-        return (new CompeticaoResource($competicao->load('jogo')))
+        return (new CompeticaoResource($competicao))
             ->response()
             ->setStatusCode(201);
     }
@@ -88,7 +94,11 @@ class CompeticaoController extends Controller
             return $competicao;
         });
 
-        return new CompeticaoResource($competicao->load('jogo'));
+        if ($competicao->jogo_id) {
+            $competicao->load('jogo');
+        }
+
+        return new CompeticaoResource($competicao);
     }
 
     public function destroy($id)
