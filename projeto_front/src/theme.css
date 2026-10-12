@@ -1,0 +1,58 @@
+:root {
+  --tema-fundo-claro: #f7f7f7;
+  --tema-superficie-clara: #ffffff;
+  --tema-texto-claro: #222222;
+  --tema-borda-clara: rgba(0, 0, 0, 0.14);
+}
+
+body.tema-claro {
+  background: var(--tema-fundo-claro);
+  color: var(--tema-texto-claro);
+}
+
+body.tema-claro [class~="bg-black"],
+body.tema-claro [class~="bg-black/40"],
+body.tema-claro [class~="bg-black/90"] {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+body.tema-claro [class~="bg-white/5"] {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+body.tema-claro [class~="text-white"],
+body.tema-claro [class~="text-gray-300"],
+body.tema-claro [class~="text-gray-400"] {
+  color: var(--tema-texto-claro) !important;
+}
+
+body.tema-claro [class~="border-white/10"] {
+  border-color: var(--tema-borda-clara) !important;
+}
+
+body.tema-claro [class~="bg-gradient-to-t"] {
+  background: linear-gradient(0deg, #ffffff, #f1d98a) !important;
+}
+
+body.tema-claro input,
+body.tema-claro textarea,
+body.tema-claro select {
+  color: var(--tema-texto-claro) !important;
+  background-color: rgba(255, 255, 255, 0.82) !important;
+  border-color: var(--tema-borda-clara);
+}
+
+body.tema-claro input::placeholder,
+body.tema-claro textarea::placeholder {
+  color: #666;
+}
+
+body.tema-claro canvas {
+  filter: saturate(0.75) brightness(1.2);
+  opacity: 0.65;
+}
+
+body.tema-claro #footer {
+  background-color: var(--tema-superficie-clara);
+  color: var(--tema-texto-claro);
+}

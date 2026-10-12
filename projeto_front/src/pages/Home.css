@@ -310,13 +310,13 @@ select option:checked {
   width: 100%;
   max-width: 1120px;
   margin: 0 auto;
-  padding: 0 42px;
   box-sizing: border-box;
 }
 
 .carrossel {
   width: 100%;
-  padding-bottom: 10px;
+  padding: 0 42px 10px;
+  box-sizing: border-box;
 }
 
 .carrossel .swiper-wrapper {
@@ -339,6 +339,20 @@ select option:checked {
 .carrossel .swiper-button-prev,
 .carrossel .swiper-button-next {
   color: var(--cor-destaque);
+  top: calc(50% - 5px);
+  width: 34px;
+  height: 100%;
+  margin-top: 0;
+  background: rgba(17, 17, 17, 0.8);
+  z-index: 2;
+}
+
+.carrossel .swiper-button-prev {
+  left: 0;
+}
+
+.carrossel .swiper-button-next {
+  right: 0;
 }
 
 .carrossel .swiper-button-prev::after,
@@ -486,11 +500,21 @@ body.tema-claro .card-info p {
   }
 
   .carrossel-container {
-    padding: 0 28px;
+    padding: 0;
   }
 
   .carrossel .swiper-slide {
     width: 160px;
+  }
+
+  .carrossel {
+    padding-left: 34px;
+    padding-right: 34px;
+  }
+
+  .carrossel .swiper-button-prev,
+  .carrossel .swiper-button-next {
+    width: 28px;
   }
 
   .card img {

@@ -1,8 +1,14 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "react-loading-skeleton/dist/skeleton.css";
+import "./theme.css";
 import App from "./App.jsx";
 import { manipulateLocalStorage } from "./utils/encrypt-storage";
+
+document.body.classList.toggle(
+  "tema-claro",
+  localStorage.getItem("playon_theme") === "light",
+);
 
 const skeletonStyle = document.createElement("style");
 skeletonStyle.textContent = `
