@@ -34,6 +34,19 @@ body.tema-claro [class~="bg-gradient-to-t"] {
   background: linear-gradient(0deg, #ffffff, #f1d98a) !important;
 }
 
+body.tema-claro nav.nav-principal .nav-container {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-color: var(--tema-borda-clara);
+}
+
+body.tema-claro nav.nav-principal ul li a {
+  color: var(--tema-texto-claro);
+}
+
+body.tema-claro nav.nav-principal ul li a:hover {
+  color: #a27600;
+}
+
 body.tema-claro input,
 body.tema-claro textarea,
 body.tema-claro select {
@@ -45,11 +58,6 @@ body.tema-claro select {
 body.tema-claro input::placeholder,
 body.tema-claro textarea::placeholder {
   color: #666;
-}
-
-body.tema-claro canvas {
-  filter: saturate(0.75) brightness(1.2);
-  opacity: 0.65;
 }
 
 body.tema-claro #footer {

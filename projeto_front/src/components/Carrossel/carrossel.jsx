@@ -19,7 +19,7 @@ const Carrossel = ({ equipe, competicao }) => {
         modules={[Navigation]}
         navigation
         slidesPerView="auto"
-        centerInsufficientSlides
+        centerInsufficientSlides={items.length < maxCards}
         spaceBetween={15}
         watchOverflow
       >

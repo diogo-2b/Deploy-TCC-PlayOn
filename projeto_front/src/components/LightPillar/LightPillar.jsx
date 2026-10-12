@@ -27,6 +27,17 @@ const LightPillar = ({
   const timeRef = useRef(0);
   const rotationSpeedRef = useRef(rotationSpeed);
   const [webGLSupported, setWebGLSupported] = useState(true);
+  const [temaClaro, setTemaClaro] = useState(
+    () => document.body.classList.contains("tema-claro"),
+  );
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setTemaClaro(document.body.classList.contains("tema-claro"));
+    });
+    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
 
   // Check WebGL support
   useEffect(() => {
@@ -376,8 +387,10 @@ const LightPillar = ({
       const color = new THREE.Color(hex);
       return new THREE.Vector3(color.r, color.g, color.b);
     };
-    materialRef.current.uniforms.uTopColor.value = parseColor(topColor);
-  }, [topColor]);
+    materialRef.current.uniforms.uTopColor.value = parseColor(
+      temaClaro ? "#ffffff" : topColor,
+    );
+  }, [topColor, temaClaro]);
 
   useEffect(() => {
     if (!materialRef.current) return;
@@ -385,8 +398,10 @@ const LightPillar = ({
       const color = new THREE.Color(hex);
       return new THREE.Vector3(color.r, color.g, color.b);
     };
-    materialRef.current.uniforms.uBottomColor.value = parseColor(bottomColor);
-  }, [bottomColor]);
+    materialRef.current.uniforms.uBottomColor.value = parseColor(
+      temaClaro ? "#d9d9d9" : bottomColor,
+    );
+  }, [bottomColor, temaClaro]);
 
   useEffect(() => {
     if (!materialRef.current) return;
