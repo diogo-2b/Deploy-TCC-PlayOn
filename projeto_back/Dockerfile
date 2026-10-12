@@ -13,6 +13,8 @@ WORKDIR /app
 
 COPY . .
 
+ENV LOG_CHANNEL=stderr
+
 RUN composer install --no-dev --optimize-autoloader
 RUN php artisan about
 

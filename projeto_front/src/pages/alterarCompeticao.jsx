@@ -237,7 +237,16 @@ const AlterarCompeticao = () => {
       setMensagem("Atualizado com sucesso");
       window.location.reload();
     } catch (error) {
-      setMensagem(error?.response?.data?.message || "Erro ao atualizar");
+      const validationErrors = error?.response?.data?.errors;
+      const validationMessage =
+        validationErrors && typeof validationErrors === "object"
+          ? Object.values(validationErrors).flat().join(" ")
+          : null;
+      setMensagem(
+        validationMessage ||
+          error?.response?.data?.message ||
+          "Erro ao atualizar",
+      );
     }
   };
 

@@ -10,6 +10,8 @@ use App\Http\Requests\CompeticaoUpdateRequest;
 use App\Http\Resources\CompeticaoResource;
 use App\Services\CloudinaryService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class CompeticaoController extends Controller
 {
@@ -36,23 +38,34 @@ class CompeticaoController extends Controller
             $data['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/competicoes');
         }
 
-        $competicao = DB::transaction(function () use ($data) {
-            if (!empty($data['igdb_id'])) {
-                $jogo = Jogo::updateOrCreate(
-                    ['igdb_id' => $data['igdb_id']],
-                    [
-                        'nome' => $data['jogo_nome'],
-                        'capa_url' => $data['jogo_capa_url'] ?? null,
-                    ]
-                );
+        try {
+            $competicao = DB::transaction(function () use ($data) {
+                if (!empty($data['igdb_id'])) {
+                    $jogo = Jogo::updateOrCreate(
+                        ['igdb_id' => $data['igdb_id']],
+                        [
+                            'nome' => $data['jogo_nome'],
+                            'capa_url' => $data['jogo_capa_url'] ?? null,
+                        ]
+                    );
 
-                $data['jogo_id'] = $jogo->id;
-            }
+                    $data['jogo_id'] = $jogo->id;
+                }
 
-            unset($data['igdb_id'], $data['jogo_nome'], $data['jogo_capa_url']);
+                unset($data['igdb_id'], $data['jogo_nome'], $data['jogo_capa_url']);
 
-            return Competicao::create($data);
-        });
+                return Competicao::create($data);
+            });
+        } catch (Throwable $exception) {
+            Log::error('Erro ao cadastrar competição', [
+                'message' => $exception->getMessage(),
+                'exception' => $exception,
+            ]);
+
+            return response()->json([
+                'message' => 'Não foi possível salvar a competição.',
+            ], 500);
+        }
 
         return (new CompeticaoResource($competicao))
             ->response()
@@ -75,24 +88,36 @@ class CompeticaoController extends Controller
             $data['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/competicoes');
         }
 
-        $competicao = DB::transaction(function () use ($data, $competicao) {
-            if (!empty($data['igdb_id'])) {
-                $jogo = Jogo::updateOrCreate(
-                    ['igdb_id' => $data['igdb_id']],
-                    [
-                        'nome' => $data['jogo_nome'],
-                        'capa_url' => $data['jogo_capa_url'] ?? null,
-                    ]
-                );
+        try {
+            $competicao = DB::transaction(function () use ($data, $competicao) {
+                if (!empty($data['igdb_id'])) {
+                    $jogo = Jogo::updateOrCreate(
+                        ['igdb_id' => $data['igdb_id']],
+                        [
+                            'nome' => $data['jogo_nome'],
+                            'capa_url' => $data['jogo_capa_url'] ?? null,
+                        ]
+                    );
 
-                $data['jogo_id'] = $jogo->id;
-            }
+                    $data['jogo_id'] = $jogo->id;
+                }
 
-            unset($data['igdb_id'], $data['jogo_nome'], $data['jogo_capa_url']);
-            $competicao->update($data);
+                unset($data['igdb_id'], $data['jogo_nome'], $data['jogo_capa_url']);
+                $competicao->update($data);
 
-            return $competicao;
-        });
+                return $competicao;
+            });
+        } catch (Throwable $exception) {
+            Log::error('Erro ao alterar competição', [
+                'competicao_id' => $competicao->id,
+                'message' => $exception->getMessage(),
+                'exception' => $exception,
+            ]);
+
+            return response()->json([
+                'message' => 'Não foi possível salvar as alterações da competição.',
+            ], 500);
+        }
 
         if ($competicao->jogo_id) {
             $competicao->load('jogo');

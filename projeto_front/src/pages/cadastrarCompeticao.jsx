@@ -131,7 +131,13 @@ const CadastrarCompeticao = () => {
       setMensagem("Cadastro realizado com sucesso!");
       setTimeout(() => navigate("/competicoes"), 800);
     } catch (error) {
+      const validationErrors = error?.response?.data?.errors;
+      const validationMessage =
+        validationErrors && typeof validationErrors === "object"
+          ? Object.values(validationErrors).flat().join(" ")
+          : null;
       const msg =
+        validationMessage ||
         error?.response?.data?.message ||
         "Erro ao cadastrar competição. Tente novamente.";
       setErros({ geral: msg });
