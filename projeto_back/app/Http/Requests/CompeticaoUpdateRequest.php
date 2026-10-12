@@ -20,6 +20,9 @@ class CompeticaoUpdateRequest extends FormRequest
             'dono' => 'nullable|integer',
             'tipo' => 'nullable|boolean',
             'inscricao' => 'nullable|boolean',
+            'igdb_id' => 'nullable|integer|min:1',
+            'jogo_nome' => 'required_with:igdb_id|string|max:255',
+            'jogo_capa_url' => 'nullable|url|max:2048',
         ];
     }
 

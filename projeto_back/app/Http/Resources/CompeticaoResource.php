@@ -31,6 +31,7 @@ class CompeticaoResource extends JsonResource
             'codigo' => $this->id,
             'dono' => $this->dono,
             'imagem_url' => $imagemUrl,
+            'jogo' => $this->whenLoaded('jogo'),
             'media' => $this->whenLoaded('media', function () {
                 return $this->media->map(function ($media) {
                     if (Str::startsWith($media->source, ['http://', 'https://'])) {

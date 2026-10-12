@@ -111,7 +111,12 @@ const CadastrarCompeticao = () => {
         "igdb_id",
         String(jogoSelecionado.igdb_id)
       );
+      formData.append("jogo_nome", jogoSelecionado.nome);
+      if (jogoSelecionado.capa_url) {
+        formData.append("jogo_capa_url", jogoSelecionado.capa_url);
+      }
       if (tipo === "publico") formData.append("tipo", "1");
+      if (inscricao === "equipe") formData.append("inscricao", "1");
       if (imagem) formData.append("imagem", imagem);
 
       await axiosClient.post("/competicoes", formData);
@@ -204,7 +209,7 @@ const CadastrarCompeticao = () => {
             )}
           </div>
 
-          // Campo de busca de jogo
+          {/* Campo de busca de jogo */}
           
 <div className="mb-4">
   <label
@@ -351,7 +356,7 @@ const CadastrarCompeticao = () => {
 </div>
 
 
-          // Campo de Tipo de Competição
+          {/* Campo de Tipo de Competição */}
 
           <div className="mb-4">
             <label htmlFor="tipo" className="block text-sm text-gray-300 mb-2">

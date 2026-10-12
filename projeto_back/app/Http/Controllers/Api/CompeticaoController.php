@@ -4,21 +4,23 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Competicao;
+use App\Models\Jogo;
 use App\Http\Requests\CompeticaoStoreRequest;
 use App\Http\Requests\CompeticaoUpdateRequest;
 use App\Http\Resources\CompeticaoResource;
 use App\Services\CloudinaryService;
+use Illuminate\Support\Facades\DB;
 
 class CompeticaoController extends Controller
 {
     public function index()
     {
-        return CompeticaoResource::collection(Competicao::all());
+        return CompeticaoResource::collection(Competicao::with('jogo')->get());
     }
 
     public function show($id)
     {
-        return new CompeticaoResource(Competicao::findOrFail($id));
+        return new CompeticaoResource(Competicao::with('jogo')->findOrFail($id));
     }
 
     public function store(CompeticaoStoreRequest $request, CloudinaryService $cloudinary)
@@ -28,9 +30,27 @@ class CompeticaoController extends Controller
             $data['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/competicoes');
         }
 
-        $competicao = Competicao::create($data);
+        $competicao = DB::transaction(function () use ($data) {
+            if (!empty($data['igdb_id'])) {
+                $jogo = Jogo::updateOrCreate(
+                    ['igdb_id' => $data['igdb_id']],
+                    [
+                        'nome' => $data['jogo_nome'],
+                        'capa_url' => $data['jogo_capa_url'] ?? null,
+                    ]
+                );
 
-        return (new CompeticaoResource($competicao))->response()->setStatusCode(201);
+                $data['jogo_id'] = $jogo->id;
+            }
+
+            unset($data['igdb_id'], $data['jogo_nome'], $data['jogo_capa_url']);
+
+            return Competicao::create($data);
+        });
+
+        return (new CompeticaoResource($competicao->load('jogo')))
+            ->response()
+            ->setStatusCode(201);
     }
 
     public function update(CompeticaoUpdateRequest $request, $id, CloudinaryService $cloudinary)
@@ -49,9 +69,26 @@ class CompeticaoController extends Controller
             $data['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/competicoes');
         }
 
-        $competicao->update($data);
+        $competicao = DB::transaction(function () use ($data, $competicao) {
+            if (!empty($data['igdb_id'])) {
+                $jogo = Jogo::updateOrCreate(
+                    ['igdb_id' => $data['igdb_id']],
+                    [
+                        'nome' => $data['jogo_nome'],
+                        'capa_url' => $data['jogo_capa_url'] ?? null,
+                    ]
+                );
 
-        return new CompeticaoResource($competicao);
+                $data['jogo_id'] = $jogo->id;
+            }
+
+            unset($data['igdb_id'], $data['jogo_nome'], $data['jogo_capa_url']);
+            $competicao->update($data);
+
+            return $competicao;
+        });
+
+        return new CompeticaoResource($competicao->load('jogo'));
     }
 
     public function destroy($id)

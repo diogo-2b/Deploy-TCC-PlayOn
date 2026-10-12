@@ -18,6 +18,11 @@ const AlterarCompeticao = () => {
   const [imagem, setImagem] = useState(null);
   const [mensagem, setMensagem] = useState("");
   const [imagemPreview, setImagemPreview] = useState(null);
+  const [buscaJogo, setBuscaJogo] = useState("");
+  const [jogosEncontrados, setJogosEncontrados] = useState([]);
+  const [jogoSelecionado, setJogoSelecionado] = useState(null);
+  const [carregandoJogos, setCarregandoJogos] = useState(false);
+  const [erroBuscaJogo, setErroBuscaJogo] = useState("");
   const [statusInscricaoPessoa, setStatusInscricaoPessoa] = useState(null);
   const [equipesUsuario, setEquipesUsuario] = useState([]);
   const [equipeSelecionadaId, setEquipeSelecionadaId] = useState("");
@@ -121,6 +126,8 @@ const AlterarCompeticao = () => {
         setDescricao(data.descricao || "");
         setTipo(data.tipo ? "publico" : "privado");
         setInscricao(data.inscricao ? "equipe" : "pessoa");
+        setJogoSelecionado(data.jogo || null);
+        setBuscaJogo(data.jogo?.nome || "");
 
         const owner =
           Number(data.dono ?? data.usuario_id ?? 0) === usuarioLogadoId;
@@ -157,6 +164,44 @@ const AlterarCompeticao = () => {
   }, [codigo, usuarioLogadoId, carregarParticipantes]);
 
   useEffect(() => {
+    const termo = buscaJogo.trim();
+    if (termo.length < 2 || jogoSelecionado?.nome === termo) {
+      setJogosEncontrados([]);
+      setErroBuscaJogo("");
+      setCarregandoJogos(false);
+      return;
+    }
+
+    let cancelado = false;
+    const timer = setTimeout(async () => {
+      setCarregandoJogos(true);
+      setErroBuscaJogo("");
+      try {
+        const response = await axiosClient.get("/jogos", {
+          params: { search: termo },
+        });
+        if (!cancelado) {
+          setJogosEncontrados(
+            Array.isArray(response.data) ? response.data : [],
+          );
+        }
+      } catch {
+        if (!cancelado) {
+          setJogosEncontrados([]);
+          setErroBuscaJogo("Não foi possível pesquisar jogos.");
+        }
+      } finally {
+        if (!cancelado) setCarregandoJogos(false);
+      }
+    }, 350);
+
+    return () => {
+      cancelado = true;
+      clearTimeout(timer);
+    };
+  }, [buscaJogo, jogoSelecionado]);
+
+  useEffect(() => {
     return () => {
       if (imagemPreview) {
         URL.revokeObjectURL(imagemPreview);
@@ -177,6 +222,13 @@ const AlterarCompeticao = () => {
       if (tipo === "publico") formData.append("tipo", "1");
       if (inscricao === "equipe") formData.append("inscricao", "1");
       if (imagem) formData.append("imagem", imagem);
+      if (jogoSelecionado?.igdb_id) {
+        formData.append("igdb_id", String(jogoSelecionado.igdb_id));
+        formData.append("jogo_nome", jogoSelecionado.nome);
+        if (jogoSelecionado.capa_url) {
+          formData.append("jogo_capa_url", jogoSelecionado.capa_url);
+        }
+      }
 
       formData.append("_method", "PUT");
 
@@ -391,6 +443,72 @@ const AlterarCompeticao = () => {
               className="mb-3 min-h-28 rounded-md border border-white/10 bg-white/5 p-3 text-sm text-white outline-none backdrop-blur-sm placeholder:text-gray-400 focus:border-[#c09318] focus:ring-1 focus:ring-[#c09318]"
             />
 
+            <label className="text-sm text-gray-400">Jogo:</label>
+            <input
+              value={buscaJogo}
+              onChange={(e) => {
+                setBuscaJogo(e.target.value);
+                setJogoSelecionado(null);
+              }}
+              placeholder="Pesquise um jogo, ex.: Valorant"
+              autoComplete="off"
+              className="rounded-md border border-white/10 bg-white/5 p-3 text-sm text-white outline-none focus:border-[#c09318]"
+            />
+
+            {carregandoJogos && (
+              <p className="mt-2 text-sm text-gray-300">Pesquisando jogos...</p>
+            )}
+            {erroBuscaJogo && (
+              <p className="mt-2 text-sm text-red-400">{erroBuscaJogo}</p>
+            )}
+            {jogosEncontrados.length > 0 && !jogoSelecionado && (
+              <div className="mb-3 max-h-60 overflow-y-auto rounded-lg border border-white/10 bg-black/90">
+                {jogosEncontrados.map((jogo) => (
+                  <button
+                    key={jogo.igdb_id}
+                    type="button"
+                    onClick={() => {
+                      setJogoSelecionado(jogo);
+                      setBuscaJogo(jogo.nome);
+                      setJogosEncontrados([]);
+                    }}
+                    className="flex w-full items-center gap-3 border-b border-white/10 p-3 text-left hover:bg-white/10"
+                  >
+                    {jogo.capa_url ? (
+                      <img
+                        src={jogo.capa_url}
+                        alt={`Capa de ${jogo.nome}`}
+                        className="h-16 w-11 rounded object-cover"
+                      />
+                    ) : (
+                      <div className="h-16 w-11 rounded bg-white/10" />
+                    )}
+                    <span className="flex-1 font-semibold">{jogo.nome}</span>
+                    <span className="text-sm text-[#daa520]">Selecionar</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {jogoSelecionado && (
+              <div className="mb-3 flex items-center gap-3 rounded-lg border border-[#c09318] bg-black/40 p-3">
+                {jogoSelecionado.capa_url && (
+                  <img
+                    src={jogoSelecionado.capa_url}
+                    alt={`Capa de ${jogoSelecionado.nome}`}
+                    className="h-20 w-14 rounded object-cover"
+                  />
+                )}
+                <div className="flex-1">
+                  <p className="text-xs text-gray-400">Jogo selecionado</p>
+                  <p className="font-semibold">{jogoSelecionado.nome}</p>
+                  <p className="text-xs text-gray-400">
+                    ID IGDB: {jogoSelecionado.igdb_id}
+                  </p>
+                </div>
+              </div>
+            )}
+
             <label className="text-sm text-gray-400">Tipo:</label>
             <select
               value={tipo}
@@ -539,6 +657,30 @@ const AlterarCompeticao = () => {
             <p className="text-sm text-gray-400">
               Inscrição: {inscricao === "equipe" ? "Equipes" : "Individual"}
             </p>
+            <div className="mt-2 flex items-center gap-3 rounded-md border border-white/10 bg-white/5 p-4">
+              {competicao?.jogo?.capa_url ? (
+                <img
+                  src={competicao.jogo.capa_url}
+                  alt={`Capa de ${competicao.jogo.nome}`}
+                  className="h-24 w-16 rounded object-cover"
+                />
+              ) : (
+                <div className="flex h-24 w-16 items-center justify-center rounded bg-white/10 text-center text-xs text-gray-400">
+                  Sem capa
+                </div>
+              )}
+              <div>
+                <p className="text-xs text-gray-400">Jogo da competição</p>
+                <p className="font-semibold text-white">
+                  {competicao?.jogo?.nome || "Jogo não informado"}
+                </p>
+                {competicao?.jogo?.igdb_id && (
+                  <p className="text-xs text-gray-400">
+                    ID IGDB: {competicao.jogo.igdb_id}
+                  </p>
+                )}
+              </div>
+            </div>
 
             {participantesVisiveis && participantesVisiveis.length > 0 && (
               <div className="mt-2 rounded-md border border-white/10 bg-white/5 p-4 text-sm backdrop-blur-sm">
