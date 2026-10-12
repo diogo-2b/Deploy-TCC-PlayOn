@@ -31,7 +31,8 @@ const SessoesProvider = ({ children }) => {
         criador_nome: it.criador?.apelido || it.criador?.nome || null,
         titulo: it.titulo,
         descricao: it.descricao,
-        jogo: it.jogo,
+        jogoRelacionado: it.jogoRelacionado || null,
+        jogo_id: it.jogo_id ?? null,
         max_jogadores: it.max_jogadores,
         status: it.status,
         status_label:
@@ -87,7 +88,9 @@ const SessoesProvider = ({ children }) => {
   };
 
   const filtrarSessoesPorJogo = (jogo) => {
-    return data?.filter((sessao) => sessao.jogo === jogo) || [];
+    return (
+      data?.filter((sessao) => sessao.jogoRelacionado?.nome === jogo) || []
+    );
   };
 
   const filtrarSessoesPorStatus = (status) => {

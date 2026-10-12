@@ -19,7 +19,9 @@ const ListaSessoes = ({ sessoes }) => {
               <div className="sessao-descricao">{sessao.descricao}</div>
             )}
           </div>
-          <div className="sessao-jogo">{sessao.jogo}</div>
+          <div className="sessao-jogo">
+            {sessao.jogoRelacionado?.nome || "Jogo não informado"}
+          </div>
           <div className="sessao-criador">
             {sessao.criador_nome
               ? `Criador: ${sessao.criador_nome}`

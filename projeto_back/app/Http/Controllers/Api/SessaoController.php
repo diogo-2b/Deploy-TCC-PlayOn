@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Sessao;
+use App\Models\Jogo;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class SessaoController extends Controller
@@ -12,6 +14,7 @@ class SessaoController extends Controller
     {
         return response()->json(
             Sessao::with('criador')
+                ->with('jogoRelacionado')
                 ->with('jogadores')
                 ->withCount('jogadores')
                 ->get()
@@ -22,6 +25,7 @@ class SessaoController extends Controller
     {
         return response()->json(
             Sessao::with('criador')
+                ->with('jogoRelacionado')
                 ->with('jogadores')
                 ->withCount('jogadores')
                 ->findOrFail($id)
@@ -34,7 +38,9 @@ class SessaoController extends Controller
             'criador_id' => 'required|exists:usuarios,id',
             'titulo' => 'required|string|max:255',
             'descricao' => 'nullable|string',
-            'jogo' => 'required|string|max:255',
+            'igdb_id' => 'required|integer|min:1',
+            'jogo_nome' => 'required|string|max:255',
+            'jogo_capa_url' => 'nullable|url|max:2048',
             'max_jogadores' => 'required|integer|min:1',
             'status' => 'nullable|in:aberta,fechada,encerrada',
         ]);
@@ -43,13 +49,28 @@ class SessaoController extends Controller
             $dados['status'] = 'aberta';
         }
 
-        $sessao = Sessao::create($dados);
+        $sessao = DB::transaction(function () use ($dados) {
+            if (!empty($dados['igdb_id'])) {
+                $jogo = Jogo::updateOrCreate(
+                    ['igdb_id' => $dados['igdb_id']],
+                    [
+                        'nome' => $dados['jogo_nome'],
+                        'capa_url' => $dados['jogo_capa_url'] ?? null,
+                    ]
+                );
+                $dados['jogo_id'] = $jogo->id;
+            }
+
+            unset($dados['igdb_id'], $dados['jogo_nome'], $dados['jogo_capa_url']);
+            return Sessao::create($dados);
+        });
 
         $sessao->jogadores()->syncWithoutDetaching([
             $dados['criador_id'],
         ]);
 
         $sessao->load('criador', 'jogadores');
+        $sessao->load('jogoRelacionado');
 
         return response()->json(
             $sessao->loadCount('jogadores'),
@@ -71,15 +92,32 @@ class SessaoController extends Controller
         $dados = $request->validate([
             'titulo' => 'sometimes|required|string|max:255',
             'descricao' => 'nullable|string',
-            'jogo' => 'sometimes|required|string|max:255',
+            'igdb_id' => 'sometimes|required|integer|min:1',
+            'jogo_nome' => 'required_with:igdb_id|string|max:255',
+            'jogo_capa_url' => 'nullable|url|max:2048',
             'max_jogadores' => 'sometimes|required|integer|min:1',
             'status' => 'sometimes|required|in:aberta,fechada,encerrada',
         ]);
 
-        $sessao->update($dados);
+        $sessao = DB::transaction(function () use ($dados, $sessao) {
+            if (!empty($dados['igdb_id'])) {
+                $jogo = Jogo::updateOrCreate(
+                    ['igdb_id' => $dados['igdb_id']],
+                    [
+                        'nome' => $dados['jogo_nome'],
+                        'capa_url' => $dados['jogo_capa_url'] ?? null,
+                    ]
+                );
+                $dados['jogo_id'] = $jogo->id;
+            }
+
+            unset($dados['igdb_id'], $dados['jogo_nome'], $dados['jogo_capa_url']);
+            $sessao->update($dados);
+            return $sessao;
+        });
 
         return response()->json(
-            $sessao->fresh()->load('criador', 'jogadores')->loadCount('jogadores')
+            $sessao->fresh()->load('criador', 'jogoRelacionado', 'jogadores')->loadCount('jogadores')
         );
     }
 

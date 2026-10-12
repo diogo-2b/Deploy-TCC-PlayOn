@@ -22,4 +22,9 @@ class Jogo extends Model
     {
         return $this->hasMany(Competicao::class, 'jogo_id');
     }
+
+    public function sessoes(): HasMany
+    {
+        return $this->hasMany(Sessao::class, 'jogo_id');
+    }
 }

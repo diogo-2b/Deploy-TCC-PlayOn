@@ -14,7 +14,11 @@ const AlterarSessao = () => {
   const [carregando, setCarregando] = useState(true);
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
-  const [jogo, setJogo] = useState("");
+  const [jogoSelecionado, setJogoSelecionado] = useState(null);
+  const [buscaJogo, setBuscaJogo] = useState("");
+  const [jogosEncontrados, setJogosEncontrados] = useState([]);
+  const [carregandoJogos, setCarregandoJogos] = useState(false);
+  const [erroBuscaJogo, setErroBuscaJogo] = useState("");
   const [maxJogadores, setMaxJogadores] = useState(5);
   const [status, setStatus] = useState("aberta");
   const [mensagem, setMensagem] = useState("");
@@ -87,7 +91,9 @@ const AlterarSessao = () => {
         setSessao(data);
         setTitulo(data?.titulo || "");
         setDescricao(data?.descricao || "");
-        setJogo(data?.jogo || "");
+        const jogoData = data?.jogoRelacionado || null;
+        setJogoSelecionado(jogoData);
+        setBuscaJogo(jogoData?.nome || "");
         setMaxJogadores(data?.max_jogadores || 5);
         setStatus(data?.status || "aberta");
       } catch {
@@ -101,6 +107,35 @@ const AlterarSessao = () => {
   }, [codigo]);
 
   useEffect(() => {
+    const termo = buscaJogo.trim();
+    if (termo.length < 2 || jogoSelecionado?.nome === termo) {
+      setJogosEncontrados([]);
+      setCarregandoJogos(false);
+      return;
+    }
+    let cancelado = false;
+    const timer = setTimeout(async () => {
+      setCarregandoJogos(true);
+      setErroBuscaJogo("");
+      try {
+        const response = await axiosClient.get("/jogos", { params: { search: termo } });
+        if (!cancelado) setJogosEncontrados(Array.isArray(response.data) ? response.data : []);
+      } catch {
+        if (!cancelado) {
+          setJogosEncontrados([]);
+          setErroBuscaJogo("Não foi possível pesquisar jogos.");
+        }
+      } finally {
+        if (!cancelado) setCarregandoJogos(false);
+      }
+    }, 350);
+    return () => {
+      cancelado = true;
+      clearTimeout(timer);
+    };
+  }, [buscaJogo, jogoSelecionado]);
+
+  useEffect(() => {
     if (codigo) {
       carregarJogadores();
     }
@@ -111,6 +146,7 @@ const AlterarSessao = () => {
   }
 
   const criadorId = Number(sessao?.criador_id ?? sessao?.criador?.id ?? 0);
+  const jogoRelacionado = sessao?.jogoRelacionado || null;
   const isOwner = criadorId > 0 && criadorId === usuarioLogadoId;
   const minhaInscricao = jogadores.some(
     (jogador) => Number(jogador.id) === usuarioLogadoId,
@@ -123,7 +159,7 @@ const AlterarSessao = () => {
     const novosErros = {};
     if (!titulo.trim()) novosErros.titulo = "O título é obrigatório.";
     if (!descricao.trim()) novosErros.descricao = "A descrição é obrigatória.";
-    if (!jogo.trim()) novosErros.jogo = "O jogo é obrigatório.";
+    if (!jogoSelecionado) novosErros.jogo = "Selecione um jogo do catálogo.";
     if (!maxJogadores || Number(maxJogadores) < 1) {
       novosErros.maxJogadores = "Informe um número válido de jogadores.";
     }
@@ -144,7 +180,9 @@ const AlterarSessao = () => {
       await atualizarSessao(codigo, {
         titulo,
         descricao,
-        jogo,
+        igdb_id: jogoSelecionado.igdb_id,
+        jogo_nome: jogoSelecionado.nome,
+        jogo_capa_url: jogoSelecionado.capa_url || null,
         max_jogadores: Number(maxJogadores),
         status,
       });
@@ -272,10 +310,49 @@ const AlterarSessao = () => {
 
             <label className="text-sm text-gray-400">Jogo:</label>
             <input
-              value={jogo}
-              onChange={(e) => setJogo(e.target.value)}
+              value={buscaJogo}
+              autoComplete="off"
+              placeholder="Pesquise um jogo, ex.: Valorant"
+              onChange={(e) => {
+                setBuscaJogo(e.target.value);
+                setJogoSelecionado(null);
+              }}
               className={`mb-3 rounded-md border bg-white/5 p-3 text-sm text-white outline-none backdrop-blur-sm ${erros.jogo ? "border-red-500" : "border-white/10 focus:border-[#c09318] focus:ring-1 focus:ring-[#c09318]"}`}
             />
+            {carregandoJogos && <p className="mb-2 text-sm text-gray-300">Pesquisando jogos...</p>}
+            {erroBuscaJogo && <p className="mb-2 text-sm text-red-400">{erroBuscaJogo}</p>}
+            {jogosEncontrados.length > 0 && !jogoSelecionado && (
+              <div className="mb-3 max-h-60 overflow-y-auto rounded-lg border border-white/10 bg-black/90">
+                {jogosEncontrados.map((item) => (
+                  <button
+                    key={item.igdb_id}
+                    type="button"
+                    onClick={() => {
+                      setJogoSelecionado(item);
+                      setJogo(item.nome);
+                      setBuscaJogo(item.nome);
+                      setJogosEncontrados([]);
+                      setErros((prev) => ({ ...prev, jogo: undefined }));
+                    }}
+                    className="flex w-full items-center gap-3 border-b border-white/10 p-3 text-left hover:bg-white/10"
+                  >
+                    {item.capa_url ? <img src={item.capa_url} alt={`Capa de ${item.nome}`} className="h-16 w-11 rounded object-cover" /> : <div className="h-16 w-11 rounded bg-white/10" />}
+                    <span className="flex-1 font-semibold">{item.nome}</span>
+                    <span className="text-sm text-[#daa520]">Selecionar</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {jogoSelecionado && (
+              <div className="mb-3 flex items-center gap-3 rounded-lg border border-[#c09318] bg-black/40 p-3">
+                {jogoSelecionado.capa_url && <img src={jogoSelecionado.capa_url} alt={`Capa de ${jogoSelecionado.nome}`} className="h-20 w-14 rounded object-cover" />}
+                <div>
+                  <p className="text-xs text-gray-400">Jogo selecionado</p>
+                  <p className="font-semibold">{jogoSelecionado.nome}</p>
+                  <p className="text-xs text-gray-400">ID IGDB: {jogoSelecionado.igdb_id}</p>
+                </div>
+              </div>
+            )}
             {erros.jogo && (
               <div className="mb-3 text-sm text-red-500">{erros.jogo}</div>
             )}
@@ -389,7 +466,18 @@ const AlterarSessao = () => {
             <h2 className="mb-2 text-center text-xl font-semibold">{titulo}</h2>
 
             <p className="text-sm text-gray-300">{descricao}</p>
-            <p className="text-sm text-gray-400">Jogo: {jogo}</p>
+            <div className="flex items-center gap-3 rounded-md border border-white/10 bg-white/5 p-3">
+              {jogoRelacionado?.capa_url ? (
+                <img src={jogoRelacionado.capa_url} alt={`Capa de ${jogoRelacionado.nome}`} className="h-24 w-16 rounded object-cover" />
+              ) : (
+                <div className="flex h-24 w-16 items-center justify-center rounded bg-white/10 text-center text-xs text-gray-400">Sem capa</div>
+              )}
+              <div>
+                <p className="text-xs text-gray-400">Jogo da sessão</p>
+                <p className="font-semibold">{jogoRelacionado?.nome || "Jogo não informado"}</p>
+                {jogoRelacionado?.igdb_id && <p className="text-xs text-gray-400">ID IGDB: {jogoRelacionado.igdb_id}</p>}
+              </div>
+            </div>
             <p className="text-sm text-gray-400">
               Status: {sessao?.status_label || status}
             </p>

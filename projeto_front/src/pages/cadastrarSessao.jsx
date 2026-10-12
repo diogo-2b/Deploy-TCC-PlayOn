@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import LightPillar from "../components/LightPillar/LightPillar.jsx";
 import { useSessoes } from "../context/SessoesProvider";
+import axiosClient from "../utils/axios-client";
 
 const CadastrarSessao = () => {
   const usuarioRaw = localStorage.getDecryptedItem("auth_user");
@@ -9,7 +10,11 @@ const CadastrarSessao = () => {
 
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
-  const [jogo, setJogo] = useState("");
+  const [jogoSelecionado, setJogoSelecionado] = useState(null);
+  const [buscaJogo, setBuscaJogo] = useState("");
+  const [jogosEncontrados, setJogosEncontrados] = useState([]);
+  const [carregandoJogos, setCarregandoJogos] = useState(false);
+  const [erroBuscaJogo, setErroBuscaJogo] = useState("");
   const [maxJogadores, setMaxJogadores] = useState(5);
   const [status, setStatus] = useState("aberta");
   const [erros, setErros] = useState({});
@@ -19,14 +24,45 @@ const CadastrarSessao = () => {
   const { adicionarSessao, loadSessoes } = useSessoes();
 
   useEffect(() => {
-    return () => {};
-  }, []);
+    const termo = buscaJogo.trim();
+    if (termo.length < 2 || jogoSelecionado?.nome === termo) {
+      setJogosEncontrados([]);
+      setCarregandoJogos(false);
+      return;
+    }
+
+    let cancelado = false;
+    const timer = setTimeout(async () => {
+      setCarregandoJogos(true);
+      setErroBuscaJogo("");
+      try {
+        const response = await axiosClient.get("/jogos", {
+          params: { search: termo },
+        });
+        if (!cancelado) {
+          setJogosEncontrados(Array.isArray(response.data) ? response.data : []);
+        }
+      } catch {
+        if (!cancelado) {
+          setJogosEncontrados([]);
+          setErroBuscaJogo("Não foi possível pesquisar jogos.");
+        }
+      } finally {
+        if (!cancelado) setCarregandoJogos(false);
+      }
+    }, 350);
+
+    return () => {
+      cancelado = true;
+      clearTimeout(timer);
+    };
+  }, [buscaJogo, jogoSelecionado]);
 
   const validarFormulario = () => {
     const novosErros = {};
     if (!titulo.trim()) novosErros.titulo = "O título é obrigatório.";
     if (!descricao.trim()) novosErros.descricao = "A descrição é obrigatória.";
-    if (!jogo.trim()) novosErros.jogo = "O jogo é obrigatório.";
+    if (!jogoSelecionado) novosErros.jogo = "Selecione um jogo do catálogo.";
     if (!maxJogadores || Number(maxJogadores) < 1) {
       novosErros.maxJogadores = "Informe um número válido de jogadores.";
     }
@@ -50,7 +86,9 @@ const CadastrarSessao = () => {
         criador_id: criadorId,
         titulo,
         descricao,
-        jogo,
+        igdb_id: jogoSelecionado.igdb_id,
+        jogo_nome: jogoSelecionado.nome,
+        jogo_capa_url: jogoSelecionado.capa_url || null,
         max_jogadores: Number(maxJogadores),
         status,
       };
@@ -158,10 +196,51 @@ const CadastrarSessao = () => {
             <input
               type="text"
               id="jogo"
-              value={jogo}
-              onChange={(e) => setJogo(e.target.value)}
+              value={buscaJogo}
+              autoComplete="off"
+              placeholder="Pesquise um jogo, ex.: Valorant"
+              onChange={(e) => {
+                setBuscaJogo(e.target.value);
+                setJogoSelecionado(null);
+              }}
               className={`w-full p-3 bg-white/5 text-white text-sm rounded-md border outline-none placeholder:text-gray-400 backdrop-blur-sm ${erros.jogo ? "border-red-500" : "border-white/10 focus:border-[#c09318] focus:ring-1 focus:ring-[#c09318]"}`}
             />
+            {carregandoJogos && <p className="mt-2 text-sm text-gray-300">Pesquisando jogos...</p>}
+            {erroBuscaJogo && <p className="mt-2 text-sm text-red-400">{erroBuscaJogo}</p>}
+            {jogosEncontrados.length > 0 && !jogoSelecionado && (
+              <div className="mt-2 max-h-60 overflow-y-auto rounded-lg border border-white/10 bg-black/90">
+                {jogosEncontrados.map((item) => (
+                  <button
+                    key={item.igdb_id}
+                    type="button"
+                    onClick={() => {
+                      setJogoSelecionado(item);
+                      setJogo(item.nome);
+                      setBuscaJogo(item.nome);
+                      setJogosEncontrados([]);
+                      setErros((prev) => ({ ...prev, jogo: undefined }));
+                    }}
+                    className="flex w-full items-center gap-3 border-b border-white/10 p-3 text-left hover:bg-white/10"
+                  >
+                    {item.capa_url ? (
+                      <img src={item.capa_url} alt={`Capa de ${item.nome}`} className="h-16 w-11 rounded object-cover" />
+                    ) : <div className="h-16 w-11 rounded bg-white/10" />}
+                    <span className="flex-1 font-semibold">{item.nome}</span>
+                    <span className="text-sm text-[#daa520]">Selecionar</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {jogoSelecionado && (
+              <div className="mt-3 flex items-center gap-3 rounded-lg border border-[#c09318] bg-black/40 p-3">
+                {jogoSelecionado.capa_url && <img src={jogoSelecionado.capa_url} alt={`Capa de ${jogoSelecionado.nome}`} className="h-20 w-14 rounded object-cover" />}
+                <div>
+                  <p className="text-xs text-gray-400">Jogo selecionado</p>
+                  <p className="font-semibold">{jogoSelecionado.nome}</p>
+                  <p className="text-xs text-gray-400">ID IGDB: {jogoSelecionado.igdb_id}</p>
+                </div>
+              </div>
+            )}
             {erros.jogo && (
               <div className="text-red-500 text-sm mt-1">{erros.jogo}</div>
             )}

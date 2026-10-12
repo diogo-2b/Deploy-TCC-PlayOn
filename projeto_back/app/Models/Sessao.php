@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Jogo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,7 +18,7 @@ class Sessao extends Model
         'criador_id',
         'titulo',
         'descricao',
-        'jogo',
+        'jogo_id',
         'max_jogadores',
         'status'
     ];
@@ -44,6 +45,11 @@ class Sessao extends Model
             'sessao_id',
             'usuario_id'
         )->withTimestamps();
+    }
+
+    public function jogoRelacionado(): BelongsTo
+    {
+        return $this->belongsTo(Jogo::class, 'jogo_id');
     }
 
     public function getStatusLabelAttribute(): string
