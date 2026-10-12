@@ -308,6 +308,7 @@ select option:checked {
 
 .carrossel .swiper-wrapper {
   align-items: stretch;
+  justify-content: center;
 }
 
 .carrossel .swiper-slide {

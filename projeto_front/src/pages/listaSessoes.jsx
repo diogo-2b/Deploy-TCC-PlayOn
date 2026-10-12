@@ -1,13 +1,35 @@
 import Skeleton from "react-loading-skeleton";
+import { useMemo } from "react";
+import { useSearchParams } from "react-router";
 import LightPillar from "../components/LightPillar/LightPillar.jsx";
 import { Header } from "../components/Header/Header.jsx";
 import { Footer } from "../components/Footer/footer.jsx";
 import { NavBar } from "../components/NavBar/NavBar.jsx";
 import ListaSessoesComponent from "../components/ListaSessoes/ListaSessoes.jsx";
 import { useSessoes } from "../context/SessoesProvider";
+import { useAuthContext } from "../context/AuthProvider";
+import "./Home.css";
 
 const ListaSessoes = () => {
   const { data: sessoes, loading } = useSessoes();
+  const { user } = useAuthContext();
+  const [searchParams] = useSearchParams();
+  const somenteMinhas = searchParams.get("mine") === "1";
+  const usuarioId = Number(user?.id || user?.codigo || user?.codigoUsuario || 0);
+  const sessoesExibidas = useMemo(
+    () =>
+      somenteMinhas
+        ? (sessoes || []).filter(
+            (sessao) =>
+              Number(sessao.criador_id) === usuarioId ||
+              (Array.isArray(sessao.jogadores) &&
+                sessao.jogadores.some(
+                  (jogador) => Number(jogador.id) === usuarioId,
+                )),
+          )
+        : sessoes,
+    [sessoes, somenteMinhas, usuarioId],
+  );
 
   return (
     <div className="home-body relative overflow-hidden">
@@ -44,7 +66,10 @@ const ListaSessoes = () => {
                 </a>
               </li>
               <li>
-                <a className="text-white hover:text-yellow-300" href="/sessoes">
+                <a
+                  className="text-white hover:text-yellow-300"
+                  href="/sessoes?mine=1"
+                >
                   Minhas Sessões
                 </a>
               </li>
@@ -53,7 +78,9 @@ const ListaSessoes = () => {
         </nav>
 
         <section className="secao-sessoes">
-          <h2 className="titulo-secao">Sessões</h2>
+          <h2 className="titulo-secao">
+            {somenteMinhas ? "Minhas Sessões" : "Sessões"}
+          </h2>
 
           {loading ? (
             <div className="grid gap-4">
@@ -71,7 +98,7 @@ const ListaSessoes = () => {
               ))}
             </div>
           ) : (
-            <ListaSessoesComponent sessoes={sessoes || []} />
+            <ListaSessoesComponent sessoes={sessoesExibidas || []} />
           )}
         </section>
       </main>

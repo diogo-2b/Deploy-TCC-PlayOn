@@ -1,13 +1,86 @@
 import Skeleton from "react-loading-skeleton";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 import LightPillar from "../components/LightPillar/LightPillar.jsx";
 import { Header } from "../components/Header/Header.jsx";
 import { Footer } from "../components/Footer/footer.jsx";
 import { NavBar } from "../components/NavBar/NavBar.jsx";
 import Card from "../components/Card/Cards.jsx";
 import { useCompeticoes } from "../context/CompeticoesProvider";
+import { useEquipes } from "../context/EquipesProvider";
+import { useAuthContext } from "../context/AuthProvider";
+import axiosClient from "../utils/axios-client";
+import "./Home.css";
 
 const ListaCompeticao = () => {
   const { data: competicoes, loading } = useCompeticoes();
+  const { data: equipes } = useEquipes();
+  const { user } = useAuthContext();
+  const [searchParams] = useSearchParams();
+  const somenteMinhas = searchParams.get("mine") === "1";
+  const usuarioId = Number(user?.id || user?.codigo || user?.codigoUsuario || 0);
+
+  const [participacoes, setParticipacoes] = useState({});
+
+  useEffect(() => {
+    if (!somenteMinhas || !usuarioId || !competicoes) return;
+
+    let ativo = true;
+    Promise.all(
+      competicoes.map(async (competicao) => {
+        try {
+          const response = await axiosClient.get(
+            `/competicoes/${competicao.codigo}/participantes?include_pending=1`,
+          );
+          const participantes = Array.isArray(response.data)
+            ? response.data
+            : response.data?.data || [];
+          const equipesDoUsuario = (equipes || [])
+            .filter(
+              (equipe) =>
+                Number(
+                  equipe.administrador ?? equipe.dono ?? equipe.usuario_id,
+                ) === usuarioId,
+            )
+            .map((equipe) => Number(equipe.codigo ?? equipe.id));
+          const participa = participantes.some(
+            (participante) =>
+              (participante.tipo_participante === "usuario" &&
+                Number(participante.id_participante) === usuarioId) ||
+              (participante.tipo_participante === "equipe" &&
+                equipesDoUsuario.includes(
+                  Number(participante.id_participante),
+                )),
+          );
+          return [competicao.codigo, participa];
+        } catch (error) {
+          console.error(
+            `Erro ao verificar participação na competição ${competicao.codigo}:`,
+            error,
+          );
+          return [competicao.codigo, false];
+        }
+      }),
+    ).then((resultado) => {
+      if (ativo) setParticipacoes(Object.fromEntries(resultado));
+    });
+
+    return () => {
+      ativo = false;
+    };
+  }, [competicoes, equipes, somenteMinhas, usuarioId]);
+
+  const competicoesExibidas = useMemo(
+    () =>
+      somenteMinhas
+        ? (competicoes || []).filter(
+            (competicao) =>
+              Number(competicao.dono ?? competicao.usuario_id) === usuarioId ||
+              participacoes[competicao.codigo],
+          )
+        : competicoes,
+    [competicoes, participacoes, somenteMinhas, usuarioId],
+  );
 
   return (
     <div className="home-body relative overflow-hidden">
@@ -46,7 +119,7 @@ const ListaCompeticao = () => {
               <li>
                 <a
                   className="text-white hover:text-yellow-300"
-                  href="/competicoes"
+                  href="/competicoes?mine=1"
                 >
                   Minhas Competições
                 </a>
@@ -56,7 +129,9 @@ const ListaCompeticao = () => {
         </nav>
 
         <section className="secao-carrossel">
-          <h2 className="titulo-secao">Competições</h2>
+          <h2 className="titulo-secao">
+            {somenteMinhas ? "Minhas Competições" : "Competições"}
+          </h2>
 
           <div className="carrossel lista-grid">
             {loading ? (
@@ -73,14 +148,18 @@ const ListaCompeticao = () => {
                   </div>
                 </div>
               ))
-            ) : competicoes && competicoes.length > 0 ? (
-              competicoes.map((comp) => (
+            ) : competicoesExibidas && competicoesExibidas.length > 0 ? (
+              competicoesExibidas.map((comp) => (
                 <div key={comp.codigo} style={{ cursor: "pointer" }}>
                   <Card info={comp} />
                 </div>
               ))
             ) : (
-              <p className="text-gray-300">Nenhuma competição encontrada.</p>
+              <p className="text-gray-300">
+                {somenteMinhas
+                  ? "Você ainda não participa de nenhuma competição."
+                  : "Nenhuma competição encontrada."}
+              </p>
             )}
           </div>
         </section>

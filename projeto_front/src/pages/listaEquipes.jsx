@@ -1,13 +1,73 @@
 import Skeleton from "react-loading-skeleton";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 import LightPillar from "../components/LightPillar/LightPillar.jsx";
 import { Header } from "../components/Header/Header.jsx";
 import { Footer } from "../components/Footer/footer.jsx";
 import { NavBar } from "../components/NavBar/NavBar.jsx";
 import Card from "../components/Card/Cards.jsx";
 import { useEquipes } from "../context/EquipesProvider";
+import { useAuthContext } from "../context/AuthProvider";
+import axiosClient from "../utils/axios-client";
+import "./Home.css";
 
 const ListaEquipes = () => {
   const { data: equipes, loading } = useEquipes();
+  const { user } = useAuthContext();
+  const [searchParams] = useSearchParams();
+  const somenteMinhas = searchParams.get("mine") === "1";
+  const usuarioId = Number(user?.id || user?.codigo || user?.codigoUsuario || 0);
+  const [participacoes, setParticipacoes] = useState({});
+
+  useEffect(() => {
+    if (!somenteMinhas || !usuarioId || !equipes) return;
+
+    let ativo = true;
+    Promise.all(
+      equipes.map(async (equipe) => {
+        try {
+          const response = await axiosClient.get(
+            `/equipes/${equipe.codigo}/membros?include_pending=1`,
+          );
+          const membros = Array.isArray(response.data)
+            ? response.data
+            : response.data?.data || [];
+          return [
+            equipe.codigo,
+            membros.some(
+              (membro) =>
+                Number(membro.id_usuario ?? membro.usuario?.id) === usuarioId,
+            ),
+          ];
+        } catch (error) {
+          console.error(
+            `Erro ao verificar participação na equipe ${equipe.codigo}:`,
+            error,
+          );
+          return [equipe.codigo, false];
+        }
+      }),
+    ).then((resultado) => {
+      if (ativo) setParticipacoes(Object.fromEntries(resultado));
+    });
+
+    return () => {
+      ativo = false;
+    };
+  }, [equipes, somenteMinhas, usuarioId]);
+
+  const equipesExibidas = useMemo(
+    () =>
+      somenteMinhas
+        ? (equipes || []).filter(
+            (equipe) =>
+              Number(
+                equipe.administrador ?? equipe.dono ?? equipe.usuario_id,
+              ) === usuarioId || participacoes[equipe.codigo],
+          )
+        : equipes,
+    [equipes, participacoes, somenteMinhas, usuarioId],
+  );
 
   return (
     <div className="home-body relative overflow-hidden">
@@ -44,7 +104,10 @@ const ListaEquipes = () => {
                 </a>
               </li>
               <li>
-                <a className="text-white hover:text-yellow-300" href="/equipes">
+                <a
+                  className="text-white hover:text-yellow-300"
+                  href="/equipes?mine=1"
+                >
                   Minhas Equipes
                 </a>
               </li>
@@ -53,7 +116,9 @@ const ListaEquipes = () => {
         </nav>
 
         <section className="secao-carrossel">
-          <h2 className="titulo-secao">Equipes</h2>
+          <h2 className="titulo-secao">
+            {somenteMinhas ? "Minhas Equipes" : "Equipes"}
+          </h2>
 
           <div className="carrossel lista-grid">
             {loading ? (
@@ -70,14 +135,18 @@ const ListaEquipes = () => {
                   </div>
                 </div>
               ))
-            ) : equipes && equipes.length > 0 ? (
-              equipes.map((equipe) => (
+            ) : equipesExibidas && equipesExibidas.length > 0 ? (
+              equipesExibidas.map((equipe) => (
                 <div key={equipe.codigo} style={{ cursor: "pointer" }}>
                   <Card info={equipe} />
                 </div>
               ))
             ) : (
-              <p className="text-gray-300">Nenhuma equipe encontrada.</p>
+              <p className="text-gray-300">
+                {somenteMinhas
+                  ? "Você ainda não participa de nenhuma equipe."
+                  : "Nenhuma equipe encontrada."}
+              </p>
             )}
           </div>
         </section>
