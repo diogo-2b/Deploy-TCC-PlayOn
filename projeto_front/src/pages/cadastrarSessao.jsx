@@ -215,7 +215,6 @@ const CadastrarSessao = () => {
                     type="button"
                     onClick={() => {
                       setJogoSelecionado(item);
-                      setJogo(item.nome);
                       setBuscaJogo(item.nome);
                       setJogosEncontrados([]);
                       setErros((prev) => ({ ...prev, jogo: undefined }));
