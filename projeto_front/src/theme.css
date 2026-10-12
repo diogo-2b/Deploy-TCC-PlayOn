@@ -64,3 +64,17 @@ body.tema-claro #footer {
   background-color: var(--tema-superficie-clara);
   color: var(--tema-texto-claro);
 }
+
+body.tema-claro #footer #listaMenu {
+  color: var(--tema-texto-claro);
+}
+
+body.tema-claro .linha-sessao {
+  color: var(--tema-texto-claro);
+  background: rgba(255, 255, 255, 0.88);
+  border-color: var(--tema-borda-clara);
+}
+
+body.tema-claro .linha-sessao:hover {
+  background: #ffffff;
+}

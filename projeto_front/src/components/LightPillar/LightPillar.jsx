@@ -27,15 +27,18 @@ const LightPillar = ({
   const timeRef = useRef(0);
   const rotationSpeedRef = useRef(rotationSpeed);
   const [webGLSupported, setWebGLSupported] = useState(true);
-  const [temaClaro, setTemaClaro] = useState(
-    () => document.body.classList.contains("tema-claro"),
+  const [temaClaro, setTemaClaro] = useState(() =>
+    document.body.classList.contains("tema-claro"),
   );
 
   useEffect(() => {
     const observer = new MutationObserver(() => {
       setTemaClaro(document.body.classList.contains("tema-claro"));
     });
-    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
     return () => observer.disconnect();
   }, []);
 
@@ -143,6 +146,7 @@ const LightPillar = ({
       uniform vec2 uMouse;
       uniform vec3 uTopColor;
       uniform vec3 uBottomColor;
+      uniform vec3 uBackgroundColor;
       uniform float uIntensity;
       uniform bool uInteractive;
       uniform float uGlowAmount;
@@ -213,6 +217,8 @@ const LightPillar = ({
         col = tanh(col * uGlowAmount / widthNorm);
         
         col -= fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) / 15.0 * uNoiseIntensity;
+        float pillarAmount = clamp(max(max(col.r, col.g), col.b), 0.0, 1.0);
+        col = mix(uBackgroundColor, col, pillarAmount);
         
         gl_FragColor = vec4(col * uIntensity, 1.0);
       }
@@ -231,6 +237,9 @@ const LightPillar = ({
         uMouse: { value: mouseRef.current },
         uTopColor: { value: parseColor(topColor) },
         uBottomColor: { value: parseColor(bottomColor) },
+        uBackgroundColor: {
+          value: parseColor(temaClaro ? "#ffffff" : "#000000"),
+        },
         uIntensity: { value: intensity },
         uInteractive: { value: interactive },
         uGlowAmount: { value: glowAmount },
@@ -387,10 +396,8 @@ const LightPillar = ({
       const color = new THREE.Color(hex);
       return new THREE.Vector3(color.r, color.g, color.b);
     };
-    materialRef.current.uniforms.uTopColor.value = parseColor(
-      temaClaro ? "#ffffff" : topColor,
-    );
-  }, [topColor, temaClaro]);
+    materialRef.current.uniforms.uTopColor.value = parseColor(topColor);
+  }, [topColor]);
 
   useEffect(() => {
     if (!materialRef.current) return;
@@ -398,10 +405,18 @@ const LightPillar = ({
       const color = new THREE.Color(hex);
       return new THREE.Vector3(color.r, color.g, color.b);
     };
-    materialRef.current.uniforms.uBottomColor.value = parseColor(
-      temaClaro ? "#d9d9d9" : bottomColor,
+    materialRef.current.uniforms.uBottomColor.value = parseColor(bottomColor);
+  }, [bottomColor]);
+
+  useEffect(() => {
+    if (!materialRef.current) return;
+    const color = new THREE.Color(temaClaro ? "#ffffff" : "#000000");
+    materialRef.current.uniforms.uBackgroundColor.value = new THREE.Vector3(
+      color.r,
+      color.g,
+      color.b,
     );
-  }, [bottomColor, temaClaro]);
+  }, [temaClaro]);
 
   useEffect(() => {
     if (!materialRef.current) return;

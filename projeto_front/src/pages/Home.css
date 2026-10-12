@@ -339,11 +339,13 @@ select option:checked {
 .carrossel .swiper-button-prev,
 .carrossel .swiper-button-next {
   color: var(--cor-destaque);
-  top: calc(50% - 5px);
-  width: 34px;
-  height: 100%;
+  top: 50%;
+  width: 28px;
+  height: 28px;
   margin-top: 0;
+  transform: translateY(-50%);
   background: rgba(17, 17, 17, 0.8);
+  border-radius: 50%;
   z-index: 2;
 }
 
@@ -514,7 +516,8 @@ body.tema-claro .card-info p {
 
   .carrossel .swiper-button-prev,
   .carrossel .swiper-button-next {
-    width: 28px;
+    width: 24px;
+    height: 24px;
   }
 
   .card img {
