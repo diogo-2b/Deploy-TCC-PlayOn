@@ -3,6 +3,8 @@ import { useNavigate } from "react-router";
 import { useEffect, useRef, useState } from "react";
 import { useAuthContext } from "../../context/AuthProvider";
 
+const THEME_STORAGE_KEY = "playon_theme";
+
 const getProfileImageUrl = (usuario) => {
   const apiBaseUrl = (
     import.meta.env.VITE_API_URL ||
@@ -36,6 +38,9 @@ const getProfileImageUrl = (usuario) => {
 export const Header = () => {
   const navigate = useNavigate();
   const [menuAberto, setMenuAberto] = useState(false);
+  const [temaClaro, setTemaClaro] = useState(
+    () => localStorage.getItem(THEME_STORAGE_KEY) === "light",
+  );
   const { user, logOut } = useAuthContext();
   const avatarUrl = getProfileImageUrl(user);
 
@@ -50,6 +55,17 @@ export const Header = () => {
     setMenuAberto((prev) => !prev);
   };
 
+  const handleThemeToggle = () => {
+    setTemaClaro((temaAtual) => {
+      const novoTemaClaro = !temaAtual;
+      localStorage.setItem(
+        THEME_STORAGE_KEY,
+        novoTemaClaro ? "light" : "dark",
+      );
+      return novoTemaClaro;
+    });
+  };
+
   const handleLogout = () => {
     try {
       logOut();
@@ -60,6 +76,10 @@ export const Header = () => {
       console.error("Erro ao sair:", error);
     }
   };
+
+  useEffect(() => {
+    document.body.classList.toggle("tema-claro", temaClaro);
+  }, [temaClaro]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -114,7 +134,11 @@ export const Header = () => {
           {menuAberto && (
             <div className="side-menu" ref={menuRef}>
               <button onClick={() => navigate("/perfil")}>Minha Conta</button>
-              <button onClick={() => navigate("/minha-conta")}>
+              <button
+                type="button"
+                onClick={handleThemeToggle}
+                aria-pressed={temaClaro}
+              >
                 Alterar Tema
               </button>
               <button onClick={() => navigate("/ajuda")}>Ajuda</button>

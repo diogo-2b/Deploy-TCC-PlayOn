@@ -10,6 +10,11 @@
   --cor-scrollbar-track: #333;
 }
 
+body.tema-claro {
+  background: #f1d98a;
+  color: #222;
+}
+
 button,
 a,
 select,
@@ -30,6 +35,10 @@ label,
   min-height: 100vh;
   background: #111;
   overflow-x: hidden;
+}
+
+body.tema-claro .home-body {
+  background: #f7f7f7;
 }
 
 .background-layer {
@@ -298,7 +307,11 @@ select option:checked {
 /* CARROSSEL */
 .carrossel-container {
   position: relative;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
   padding: 0 42px;
+  box-sizing: border-box;
 }
 
 .carrossel {
@@ -367,6 +380,16 @@ select option:checked {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   transition: transform 0.2s;
   cursor: pointer;
+}
+
+body.tema-claro .card {
+  background-color: rgba(255, 255, 255, 0.92);
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+body.tema-claro .card-info p {
+  color: #555;
 }
 
 .card:hover {
