@@ -1,6 +1,6 @@
 import Skeleton from "react-loading-skeleton";
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import LightPillar from "../components/LightPillar/LightPillar.jsx";
 import { useAuthContext } from "../context/AuthProvider";
 import { useSessoes } from "../context/SessoesProvider";
@@ -430,11 +430,14 @@ const AlterarSessao = () => {
                           }}
                         />
                         <div>
-                          <p className="font-medium">
+                          <Link
+                            to={`/perfil/${jogador.id}`}
+                            className="font-medium hover:text-yellow-300"
+                          >
                             {jogador.apelido ||
                               jogador.nome ||
                               `Usuário #${jogador.id}`}
-                          </p>
+                          </Link>
                           <p className="text-xs text-gray-400">
                             {Number(jogador.id) === criadorId
                               ? "Dono"
@@ -514,12 +517,15 @@ const AlterarSessao = () => {
                             event.currentTarget.src = "/imagens/foto.png";
                           }}
                         />
-                        <p className="font-medium">
+                        <Link
+                          to={`/perfil/${jogador.id}`}
+                          className="font-medium hover:text-yellow-300"
+                        >
                           {jogador.apelido ||
                             jogador.nome ||
                             `Usuário #${jogador.id}`}
                           {Number(jogador.id) === criadorId ? " (Dono)" : ""}
-                        </p>
+                        </Link>
                       </div>
                     </li>
                   ))}

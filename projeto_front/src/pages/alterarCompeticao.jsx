@@ -619,7 +619,12 @@ const AlterarCompeticao = () => {
                               {p.participante?.apelido}
                             </Link>
                           ) : (
-                            <p className="font-medium">{p.equipe?.nome}</p>
+                            <Link
+                              to={`/equipe/${p.id_participante || p.equipe?.id || p.equipe?.codigo}`}
+                              className="font-medium hover:text-yellow-300"
+                            >
+                              {p.equipe?.nome}
+                            </Link>
                           )}
                           {isOwner && (
                             <p className="text-xs text-gray-400">
@@ -736,11 +741,21 @@ const AlterarCompeticao = () => {
                             event.currentTarget.src = "/imagens/foto.png";
                           }}
                         />
-                        <p className="font-medium">
-                          {p.tipo_participante === "usuario"
-                            ? p.participante?.apelido
-                            : p.equipe?.nome}
-                        </p>
+                        {p.tipo_participante === "usuario" ? (
+                          <Link
+                            to={`/perfil/${p.id_participante}`}
+                            className="font-medium hover:text-yellow-300"
+                          >
+                            {p.participante?.apelido}
+                          </Link>
+                        ) : (
+                          <Link
+                            to={`/equipe/${p.id_participante || p.equipe?.id || p.equipe?.codigo}`}
+                            className="font-medium hover:text-yellow-300"
+                          >
+                            {p.equipe?.nome}
+                          </Link>
+                        )}
                       </div>
                     </li>
                   ))}
