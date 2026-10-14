@@ -42,6 +42,8 @@ Route::prefix('v1')->group(function () {
     Route::apiResource('competicoes', CompeticaoController::class)->only(['index', 'show']);
     Route::apiResource('equipes', EquipeController::class)->only(['index', 'show']);
     Route::apiResource('usuarios', UsuarioController::class)->only(['store']);
+    Route::get('usuarios/busca', [UsuarioController::class, 'busca']);
+    Route::get('usuarios/{id}/perfil', [UsuarioController::class, 'perfil']);
     Route::post('usuarios/firebase', [UsuarioController::class, 'storeFromFirebase']);
     Route::apiResource('sessoes', SessaoController::class)->only(['index', 'show']);
 

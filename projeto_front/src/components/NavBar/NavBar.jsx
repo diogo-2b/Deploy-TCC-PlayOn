@@ -3,12 +3,14 @@ import { useSearch } from "../../context/SearchProvider.jsx";
 import { useCompeticoes } from "../../context/CompeticoesProvider";
 import { useEquipes } from "../../context/EquipesProvider";
 import { useSessoes } from "../../context/SessoesProvider";
+import { useUsuario } from "../../context/UsuarioProvider";
 
 export const NavBar = () => {
   const { searchTerm, setSearchTerm } = useSearch();
   const { data: competicoes } = useCompeticoes();
   const { data: equipes } = useEquipes();
   const { data: sessoes } = useSessoes();
+  const { data: usuarios } = useUsuario();
 
   const modalRef = useRef(null);
   const inputRef = useRef(null);
@@ -24,6 +26,11 @@ export const NavBar = () => {
   );
   const resultsSessoes = (sessoes || []).filter((s) =>
     normalized(s.titulo).includes(normalized(searchTerm)),
+  );
+  const resultsUsuarios = (usuarios || []).filter((usuario) =>
+    [usuario.nome, usuario.apelido].some((campo) =>
+      normalized(campo).includes(normalized(searchTerm)),
+    ),
   );
 
   // handle local input changes (immediate) and debounce updating global searchTerm
@@ -138,6 +145,30 @@ export const NavBar = () => {
                     <div className="result-title">{e.nome}</div>
                     {e.descricao && (
                       <div className="result-sub">{e.descricao}</div>
+                    )}
+                  </a>
+                ))}
+              </div>
+
+              <div className="nav-search-section">
+                <div className="nav-search-section-title">Usuários</div>
+                {resultsUsuarios.length === 0 && (
+                  <div className="nav-search-empty">
+                    Nenhum usuário encontrado
+                  </div>
+                )}
+                {resultsUsuarios.map((usuario) => (
+                  <a
+                    key={usuario.id || usuario.codigo || usuario.codigoUsuario}
+                    href={`/perfil/${usuario.id || usuario.codigo || usuario.codigoUsuario}`}
+                    className="search-result-item"
+                    onClick={() => setSearchTerm("")}
+                  >
+                    <div className="result-title">
+                      {usuario.nome || usuario.apelido || "Usuário"}
+                    </div>
+                    {usuario.apelido && usuario.nome && (
+                      <div className="result-sub">@{usuario.apelido}</div>
                     )}
                   </a>
                 ))}

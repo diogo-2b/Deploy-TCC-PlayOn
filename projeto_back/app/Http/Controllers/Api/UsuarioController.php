@@ -8,6 +8,8 @@ use App\Models\Usuario;
 use App\Http\Requests\UsuarioStoreRequest;
 use App\Http\Requests\UsuarioUpdateRequest;
 use App\Http\Resources\UsuarioResource;
+use App\Http\Resources\EquipeResource;
+use App\Http\Resources\CompeticaoResource;
 use App\Services\FirebaseService;
 use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
@@ -19,9 +21,68 @@ class UsuarioController extends Controller
         return UsuarioResource::collection(Usuario::all());
     }
 
+    public function busca()
+    {
+        return UsuarioResource::collection(
+            Usuario::query()
+                ->select(['id', 'nome', 'apelido', 'imagem'])
+                ->orderBy('apelido')
+                ->orderBy('nome')
+                ->get()
+        );
+    }
+
     public function show($id)
     {
         return new UsuarioResource(Usuario::findOrFail($id));
+    }
+
+    public function perfil($id)
+    {
+        $usuario = Usuario::findOrFail($id);
+
+        $equipes = \App\Models\Equipe::query()
+            ->where('administrador', $usuario->id)
+            ->orWhereHas('membros', function ($query) use ($usuario) {
+                $query
+                    ->where('id_usuario', $usuario->id)
+                    ->where('aprovado', true);
+            })
+            ->distinct()
+            ->orderBy('nome')
+            ->get();
+
+        $competicoes = \App\Models\Competicao::query()
+            ->where('dono', $usuario->id)
+            ->orWhereHas('participantes', function ($query) use ($usuario) {
+                $query
+                    ->where('tipo_participante', 'usuario')
+                    ->where('id_participante', $usuario->id)
+                    ->where('aprovado', true);
+            })
+            ->orWhereHas('participantes', function ($query) use ($usuario) {
+                $query
+                    ->where('tipo_participante', 'equipe')
+                    ->where('aprovado', true)
+                    ->whereHas('equipe', function ($equipeQuery) use ($usuario) {
+                        $equipeQuery
+                            ->where('administrador', $usuario->id)
+                            ->orWhereHas('membros', function ($membroQuery) use ($usuario) {
+                                $membroQuery
+                                    ->where('id_usuario', $usuario->id)
+                                    ->where('aprovado', true);
+                            });
+                    });
+            })
+            ->distinct()
+            ->orderBy('nome')
+            ->get();
+
+        return response()->json([
+            'usuario' => new UsuarioResource($usuario),
+            'equipes' => EquipeResource::collection($equipes),
+            'competicoes' => CompeticaoResource::collection($competicoes),
+        ]);
     }
 
     public function store(UsuarioStoreRequest $request, CloudinaryService $cloudinary)

@@ -1,5 +1,5 @@
 import Skeleton from "react-loading-skeleton";
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { useCallback, useEffect, useState } from "react";
 import LightPillar from "../components/LightPillar/LightPillar.jsx";
 import axiosClient from "../utils/axios-client";
@@ -611,11 +611,16 @@ const AlterarCompeticao = () => {
                           }}
                         />
                         <div>
-                          <p className="font-medium">
-                            {p.tipo_participante === "usuario"
-                              ? p.participante?.apelido
-                              : p.equipe?.nome}
-                          </p>
+                          {p.tipo_participante === "usuario" ? (
+                            <Link
+                              to={`/perfil/${p.id_participante}`}
+                              className="font-medium hover:text-yellow-300"
+                            >
+                              {p.participante?.apelido}
+                            </Link>
+                          ) : (
+                            <p className="font-medium">{p.equipe?.nome}</p>
+                          )}
                           {isOwner && (
                             <p className="text-xs text-gray-400">
                               {p.tipo_participante === "usuario"

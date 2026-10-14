@@ -1,5 +1,5 @@
 import Skeleton from "react-loading-skeleton";
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { useEffect, useState } from "react";
 import LightPillar from "../components/LightPillar/LightPillar.jsx";
 import axiosClient from "../utils/axios-client";
@@ -454,10 +454,13 @@ const AlterarEquipe = () => {
                             event.currentTarget.src = "/imagens/foto.png";
                           }}
                         />
-                        <p className="font-medium">
+                        <Link
+                          to={`/perfil/${membro.id_usuario}`}
+                          className="font-medium hover:text-yellow-300"
+                        >
                           {membro.usuario?.apelido}
                           {membro.is_owner ? " (Dono)" : ""}
-                        </p>
+                        </Link>
                       </div>
                     </li>
                   ))}
