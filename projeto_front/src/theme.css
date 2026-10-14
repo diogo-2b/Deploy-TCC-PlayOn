@@ -47,6 +47,19 @@ body.tema-claro nav.nav-principal ul li a:hover {
   color: #a27600;
 }
 
+body.tema-claro nav.nav-lista .nav-container {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: var(--tema-borda-clara) !important;
+}
+
+body.tema-claro nav.nav-lista ul li a {
+  color: var(--tema-texto-claro) !important;
+}
+
+body.tema-claro nav.nav-lista ul li a:hover {
+  color: #a27600 !important;
+}
+
 body.tema-claro input,
 body.tema-claro textarea,
 body.tema-claro select {

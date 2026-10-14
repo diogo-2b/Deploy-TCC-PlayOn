@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import axiosClient from '../utils/axios-client';
-import { mockedUsuarios } from '../mocks/mockedUsuarios';
 
 export const UsuarioContext = createContext({
   data: null,
@@ -32,7 +31,7 @@ const UsuarioProvider = ({ children }) => {
       setLoading(false);
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
-      setData(mockedUsuarios);
+      setData([]);
       setLoading(false);
     }
   };

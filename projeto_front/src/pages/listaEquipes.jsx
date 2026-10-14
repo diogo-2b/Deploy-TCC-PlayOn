@@ -92,7 +92,7 @@ const ListaEquipes = () => {
 
       <main className="main-container relative z-10">
         <NavBar />
-        <nav className="my-4 relative z-0">
+        <nav className="nav-lista my-4 relative z-0">
           <div className="nav-container w-full">
             <ul className="flex justify-center space-x-6 w-full">
               <li>
