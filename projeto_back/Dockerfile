@@ -5,7 +5,12 @@ RUN apt-get update && apt-get install -y \
     curl \
     unzip \
     libpq-dev \
-    && docker-php-ext-install pdo pdo_pgsql
+    $PHPIZE_DEPS \
+    && pecl install grpc \
+    && docker-php-ext-enable grpc \
+    && docker-php-ext-install pdo pdo_pgsql \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -15,7 +20,9 @@ COPY . .
 
 ENV LOG_CHANNEL=stderr
 
+RUN php -m | grep -i '^grpc$'
 RUN composer install --no-dev --optimize-autoloader
+
 RUN php artisan about
 
 RUN php artisan config:clear
