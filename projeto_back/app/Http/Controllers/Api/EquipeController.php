@@ -38,7 +38,7 @@ class EquipeController extends Controller
         $equipe = Equipe::findOrFail($id);
         $user = $request->user();
 
-        if (!$user || (int) $user->id !== (int) $equipe->administrador) {
+        if (!$user || (!$user->is_admin && (int) $user->id !== (int) $equipe->administrador)) {
             return response()->json([
                 'message' => 'Você não tem permissão para editar esta equipe.'
             ], 403);

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ParticipantesCompeticoesController;
 use App\Http\Controllers\Api\SessaoController;
 use App\Http\Controllers\Api\SessaoJogadoresController;
 use App\Http\Controllers\Api\JogoController;
+use App\Http\Controllers\Api\DenunciaController;
 use App\Services\FirebaseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -49,11 +50,19 @@ Route::prefix('v1')->group(function () {
 
 
     Route::middleware('auth:sanctum')->group(function () {
+        Route::get('chats/{type}/{id}/access', [\App\Http\Controllers\Api\ChatAuthorizationController::class, 'access']);
+        Route::post('auth/firebase-token', [\App\Http\Controllers\Api\ChatAuthorizationController::class, 'firebaseToken']);
         Route::apiResource('competicoes', CompeticaoController::class)->only(['store', 'update', 'destroy']);
         Route::apiResource('equipes', EquipeController::class)->only(['store', 'update', 'destroy']);
         Route::apiResource('usuarios', UsuarioController::class)->except(['store']);
         Route::get('minhas-equipes', [UsuarioController::class, 'minhasEquipes']);
         Route::apiResource('sessoes', SessaoController::class)->only(['store', 'update', 'destroy']);
+        Route::post('denuncias', [DenunciaController::class, 'store']);
+
+        Route::middleware('admin')->group(function () {
+            Route::get('denuncias', [DenunciaController::class, 'index']);
+            Route::patch('denuncias/{denuncia}/resolver', [DenunciaController::class, 'resolve']);
+        });
 
         // Rotas de participação em equipes
         Route::post('equipes/{equipaId}/membros', [ParticipantesEquipesController::class, 'store']);

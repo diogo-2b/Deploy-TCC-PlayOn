@@ -7,6 +7,7 @@ return [
 
     'allowed_origins' => [
         'https://playon-d.netlify.app',
+        'http://localhost:5173',
     ],
 
     'allowed_origins_patterns' => [],

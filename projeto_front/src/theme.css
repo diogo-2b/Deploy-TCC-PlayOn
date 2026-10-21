@@ -91,3 +91,38 @@ body.tema-claro .linha-sessao {
 body.tema-claro .linha-sessao:hover {
   background: #ffffff;
 }
+
+.chat-messages {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(192, 147, 24, 0.82) rgba(255, 255, 255, 0.06);
+  scrollbar-gutter: stable;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 9px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(220, 174, 45, 0.95),
+    rgba(128, 94, 12, 0.75)
+  );
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(241, 199, 82, 1),
+    rgba(164, 123, 21, 0.9)
+  );
+  background-clip: padding-box;
+}

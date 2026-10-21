@@ -2,6 +2,8 @@ import Skeleton from "react-loading-skeleton";
 import { Link, useParams } from "react-router";
 import { useCallback, useEffect, useState } from "react";
 import LightPillar from "../components/LightPillar/LightPillar.jsx";
+import DenunciaModal from "../components/DenunciaModal/DenunciaModal.jsx";
+import Chat from "../components/Chat/Chat.jsx";
 import axiosClient from "../utils/axios-client";
 import { useAuthContext } from "../context/AuthProvider";
 
@@ -26,6 +28,7 @@ const AlterarCompeticao = () => {
   const [statusInscricaoPessoa, setStatusInscricaoPessoa] = useState(null);
   const [equipesUsuario, setEquipesUsuario] = useState([]);
   const [equipeSelecionadaId, setEquipeSelecionadaId] = useState("");
+  const [chatAberto, setChatAberto] = useState(false);
 
   const usuarioLogado =
     user ||
@@ -84,6 +87,7 @@ const AlterarCompeticao = () => {
   const isOwner =
     competicao &&
     Number(competicao.dono ?? competicao.usuario_id ?? 0) === usuarioLogadoId;
+  const podeEditar = Boolean(isOwner || usuarioLogado?.is_admin);
 
   const carregarParticipantes = useCallback(
     async (owner = isOwner) => {
@@ -394,7 +398,33 @@ const AlterarCompeticao = () => {
         />
       </div>
 
-      <section className="relative z-10 mx-4 w-full max-w-2xl rounded-2xl border border-white/10 bg-black/40 p-8 shadow-2xl backdrop-blur-md">
+      <div className="relative z-10 mx-4 flex w-full max-w-6xl flex-col items-center gap-4 lg:flex-row lg:items-start lg:justify-center">
+      <section className="w-full max-w-2xl rounded-2xl border border-white/10 bg-black/40 p-8 shadow-2xl backdrop-blur-md">
+        <DenunciaModal
+          tipo="Competicao"
+          idDenunciado={codigo}
+          onSuccess={setMensagem}
+        />
+        <button
+          type="button"
+          aria-label={chatAberto ? "Fechar chat" : "Abrir chat"}
+          aria-expanded={chatAberto}
+          title={chatAberto ? "Fechar chat" : "Abrir chat"}
+          onClick={() => setChatAberto((aberto) => !aberto)}
+          className="absolute right-16 top-4 rounded-md border border-[#c09318] px-3 py-2 text-[#c09318] transition hover:bg-[#c09318]/10"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M20 11.5a8.5 8.5 0 0 1-8.5 8.5 8.5 8.5 0 0 1-4.1-1.05L3 20l1.05-4.4A8.5 8.5 0 1 1 20 11.5Z" />
+            <path d="M8 11.5h.01M12 11.5h.01M16 11.5h.01" />
+          </svg>
+        </button>
         <button
           onClick={() => window.history.back()}
           className="mb-4 inline-block border-2 border-[#c09318] text-[#c09318] px-3 py-2 rounded-md font-bold"
@@ -428,7 +458,7 @@ const AlterarCompeticao = () => {
               <Skeleton height={44} className="flex-1" />
             </div>
           </div>
-        ) : isOwner ? (
+        ) : podeEditar ? (
           <form
             onSubmit={handleUpdate}
             encType="multipart/form-data"
@@ -831,6 +861,15 @@ const AlterarCompeticao = () => {
           </div>
         )}
       </section>
+      {!carregando && competicao && (
+        <Chat
+          type="competicao"
+          entityId={competicao.id ?? codigo}
+          user={usuarioLogado}
+          className={`${chatAberto ? "" : "hidden"} w-full max-w-2xl lg:mt-20 lg:max-w-sm`}
+        />
+      )}
+      </div>
     </main>
   );
 };

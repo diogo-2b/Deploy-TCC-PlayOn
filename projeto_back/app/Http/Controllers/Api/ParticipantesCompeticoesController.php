@@ -8,6 +8,7 @@ use App\Models\Competicao;
 use App\Models\Equipe;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\ChatAuthorizationService;
 
 class ParticipantesCompeticoesController extends Controller
 {
@@ -53,7 +54,7 @@ class ParticipantesCompeticoesController extends Controller
     /**
      * Inscrever em uma competição (usuário ou equipe)
      */
-    public function store(Request $request)
+    public function store(Request $request, ChatAuthorizationService $chatAuthorization)
     {
         $validated = $request->validate([
             'id_competicao' => 'required|exists:competicoes,id',
@@ -105,6 +106,7 @@ class ParticipantesCompeticoesController extends Controller
             'tipo_participante' => $validated['tipo_participante'],
             'aprovado' => $aprovado,
         ]);
+        $chatAuthorization->synchronize('competicao', (int) $competicao->id);
 
         return response()->json($participacao, 201);
     }
@@ -123,7 +125,7 @@ class ParticipantesCompeticoesController extends Controller
     /**
      * Atualizar status de participação (aprovar/rejeitar)
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, ChatAuthorizationService $chatAuthorization)
     {
         $participacao = Participantes_Competicoes::findOrFail($id);
         $competicao = $participacao->competicao;
@@ -138,6 +140,7 @@ class ParticipantesCompeticoesController extends Controller
         ]);
 
         $participacao->update($validated);
+        $chatAuthorization->synchronize('competicao', (int) $competicao->id);
 
         return response()->json($participacao);
     }
@@ -145,7 +148,7 @@ class ParticipantesCompeticoesController extends Controller
     /**
      * Remover um participante da competição
      */
-    public function destroy($id)
+    public function destroy($id, ChatAuthorizationService $chatAuthorization)
     {
         $participacao = Participantes_Competicoes::findOrFail($id);
         $competicao = $participacao->competicao;
@@ -154,6 +157,7 @@ class ParticipantesCompeticoesController extends Controller
         // Permitir remoção pelo dono da competição
         if ((int) $competicao->dono === (int) $usuarioId) {
             $participacao->delete();
+            $chatAuthorization->synchronize('competicao', (int) $competicao->id);
 
             return response()->json(['message' => 'Participante removido com sucesso']);
         }
@@ -163,6 +167,7 @@ class ParticipantesCompeticoesController extends Controller
             $equipe = Equipe::find($participacao->id_participante);
             if ($equipe && (int) $equipe->administrador === (int) $usuarioId) {
                 $participacao->delete();
+                $chatAuthorization->synchronize('competicao', (int) $competicao->id);
 
                 return response()->json(['message' => 'Equipe removida da competição com sucesso']);
             }
@@ -174,7 +179,7 @@ class ParticipantesCompeticoesController extends Controller
     /**
      * Desinscrever de uma competição
      */
-    public function sair(Request $request, $competicaoId)
+    public function sair(Request $request, $competicaoId, ChatAuthorizationService $chatAuthorization)
     {
         $usuarioId = Auth::id();
         $tipoParticipante = $request->input('tipo_participante', 'usuario');
@@ -193,6 +198,7 @@ class ParticipantesCompeticoesController extends Controller
                 ->firstOrFail();
 
             $participacao->delete();
+            $chatAuthorization->synchronize('competicao', (int) $competicaoId);
 
             return response()->json(['message' => 'Equipe removida da competição com sucesso']);
         }
@@ -203,6 +209,7 @@ class ParticipantesCompeticoesController extends Controller
             ->firstOrFail();
 
         $participacao->delete();
+        $chatAuthorization->synchronize('competicao', (int) $competicaoId);
 
         return response()->json(['message' => 'Desinscrição realizada com sucesso']);
     }

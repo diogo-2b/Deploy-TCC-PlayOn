@@ -7,6 +7,7 @@ use App\Models\Participantes_Equipes;
 use App\Models\Equipe;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\ChatAuthorizationService;
 
 class ParticipantesEquipesController extends Controller
 {
@@ -64,7 +65,7 @@ class ParticipantesEquipesController extends Controller
     /**
      * Solicitar participação em uma equipe
      */
-    public function store(Request $request)
+    public function store(Request $request, ChatAuthorizationService $chatAuthorization)
     {
         $validated = $request->validate([
             'id_equipe' => 'required|exists:equipes,id',
@@ -87,6 +88,7 @@ class ParticipantesEquipesController extends Controller
             'id_usuario' => $usuarioId,
             'aprovado' => (bool) $equipe->tipo,
         ]);
+        $chatAuthorization->synchronize('equipe', (int) $equipe->id);
 
         return response()->json($participacao, 201);
     }
@@ -105,7 +107,7 @@ class ParticipantesEquipesController extends Controller
     /**
      * Atualizar status de participação (aprovar/rejeitar)
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, ChatAuthorizationService $chatAuthorization)
     {
         $membro = Participantes_Equipes::findOrFail($id);
         $equipe = $membro->equipe;
@@ -120,6 +122,7 @@ class ParticipantesEquipesController extends Controller
         ]);
 
         $membro->update($validated);
+        $chatAuthorization->synchronize('equipe', (int) $equipe->id);
 
         return response()->json($membro);
     }
@@ -127,7 +130,7 @@ class ParticipantesEquipesController extends Controller
     /**
      * Remover um membro da equipe
      */
-    public function destroy($id)
+    public function destroy($id, ChatAuthorizationService $chatAuthorization)
     {
         $membro = Participantes_Equipes::findOrFail($id);
         $equipe = $membro->equipe;
@@ -138,6 +141,7 @@ class ParticipantesEquipesController extends Controller
         }
 
         $membro->delete();
+        $chatAuthorization->synchronize('equipe', (int) $equipe->id);
 
         return response()->json(['message' => 'Membro removido com sucesso']);
     }
@@ -145,7 +149,7 @@ class ParticipantesEquipesController extends Controller
     /**
      * Sair de uma equipe
      */
-    public function sair($equipaId)
+    public function sair($equipaId, ChatAuthorizationService $chatAuthorization)
     {
         $usuarioId = Auth::id();
 
@@ -154,6 +158,7 @@ class ParticipantesEquipesController extends Controller
             ->firstOrFail();
 
         $membro->delete();
+        $chatAuthorization->synchronize('equipe', (int) $equipaId);
 
         return response()->json(['message' => 'Você saiu da equipe com sucesso']);
     }

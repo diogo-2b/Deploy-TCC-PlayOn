@@ -2,15 +2,27 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import LightPillar from "../components/LightPillar/LightPillar.jsx";
 import Card from "../components/Card/Cards.jsx";
+import DenunciaModal from "../components/DenunciaModal/DenunciaModal.jsx";
 import axiosClient from "../utils/axios-client";
+import { useAuthContext } from "../context/AuthProvider";
 
 const VisualizarPerfil = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuthContext();
   const [perfil, setPerfil] = useState(null);
   const [aba, setAba] = useState("equipes");
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
+  const [mensagem, setMensagem] = useState("");
+  const [editando, setEditando] = useState(false);
+  const [nome, setNome] = useState("");
+  const [apelido, setApelido] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [imagem, setImagem] = useState(null);
+  const [imagemPreview, setImagemPreview] = useState(null);
+  const podeEditar = Boolean(user?.is_admin);
 
   useEffect(() => {
     let ativo = true;
@@ -23,6 +35,10 @@ const VisualizarPerfil = () => {
         const resposta = await axiosClient.get(`/usuarios/${id}/perfil`);
         if (ativo) {
           setPerfil(resposta.data);
+          const dadosUsuario = resposta.data?.usuario?.data || resposta.data?.usuario;
+          setNome(dadosUsuario?.nome || "");
+          setApelido(dadosUsuario?.apelido || "");
+          setEmail(dadosUsuario?.email || "");
         }
       } catch (error) {
         console.error("Erro ao carregar perfil:", error);
@@ -47,6 +63,44 @@ const VisualizarPerfil = () => {
       ativo = false;
     };
   }, [id]);
+
+  useEffect(() => {
+    return () => {
+      if (imagemPreview) URL.revokeObjectURL(imagemPreview);
+    };
+  }, [imagemPreview]);
+
+  const handleUpdate = async (event) => {
+    event.preventDefault();
+    setMensagem("");
+
+    try {
+      const formData = new FormData();
+      formData.append("nome", nome);
+      formData.append("apelido", apelido);
+      formData.append("email", email);
+      if (senha) formData.append("password", senha);
+      if (imagem) formData.append("imagem", imagem);
+      formData.append("_method", "PUT");
+
+      const resposta = await axiosClient.post(`/usuarios/${id}`, formData);
+      const usuarioAtualizado = resposta.data?.data || resposta.data;
+
+      setPerfil((atual) => ({
+        ...atual,
+        usuario: usuarioAtualizado,
+      }));
+      setSenha("");
+      setImagem(null);
+      setImagemPreview(null);
+      setEditando(false);
+      setMensagem("Usuário atualizado com sucesso.");
+    } catch (error) {
+      setMensagem(
+        error?.response?.data?.message || "Erro ao atualizar o usuário.",
+      );
+    }
+  };
 
   const usuario = perfil?.usuario?.data || perfil?.usuario;
   const equipes = perfil?.equipes?.data || perfil?.equipes || [];
@@ -101,6 +155,11 @@ const VisualizarPerfil = () => {
       </div>
 
       <section className="relative z-10 mx-auto w-full max-w-4xl px-4 py-8">
+        <DenunciaModal
+          tipo="Usuario"
+          idDenunciado={id}
+          onSuccess={setMensagem}
+        />
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -108,11 +167,14 @@ const VisualizarPerfil = () => {
         >
           ← Voltar
         </button>
+        {mensagem && (
+          <p className="mb-4 text-sm text-green-300">{mensagem}</p>
+        )}
 
         <div className="rounded-2xl border border-white/10 bg-black/40 p-6 shadow-2xl backdrop-blur-md">
           <div className="mb-8 flex flex-col items-center">
             <img
-              src={avatarUrl}
+              src={imagemPreview || avatarUrl}
               alt={`Foto de ${usuario.apelido || usuario.nome || "usuário"}`}
               className="h-40 w-40 rounded-full border border-[#c09318] object-cover shadow-lg"
               onError={(event) => {
@@ -125,26 +187,96 @@ const VisualizarPerfil = () => {
             </h1>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="text-sm text-gray-400">Nome</label>
-              <div className="mt-1 rounded-md border border-white/10 bg-white/5 p-3 text-gray-200">
-                {usuario.nome || "Não informado"}
+          {podeEditar && (
+            <button
+              type="button"
+              onClick={() => setEditando((atual) => !atual)}
+              className="mb-5 rounded-md bg-[#81700e] px-4 py-2 font-semibold"
+            >
+              {editando ? "Cancelar edição" : "Editar usuário"}
+            </button>
+          )}
+
+          {editando ? (
+            <form onSubmit={handleUpdate} className="grid gap-4 sm:grid-cols-2">
+              <label className="text-sm text-gray-400">
+                Nome
+                <input
+                  value={nome}
+                  onChange={(event) => setNome(event.target.value)}
+                  className="mt-1 w-full rounded-md border border-white/10 bg-white/5 p-3 text-white outline-none focus:border-[#c09318]"
+                />
+              </label>
+              <label className="text-sm text-gray-400">
+                Apelido
+                <input
+                  value={apelido}
+                  onChange={(event) => setApelido(event.target.value)}
+                  className="mt-1 w-full rounded-md border border-white/10 bg-white/5 p-3 text-white outline-none focus:border-[#c09318]"
+                />
+              </label>
+              <label className="text-sm text-gray-400 sm:col-span-2">
+                Email
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  className="mt-1 w-full rounded-md border border-white/10 bg-white/5 p-3 text-white outline-none focus:border-[#c09318]"
+                />
+              </label>
+              <label className="text-sm text-gray-400 sm:col-span-2">
+                Nova senha (opcional)
+                <input
+                  type="password"
+                  value={senha}
+                  onChange={(event) => setSenha(event.target.value)}
+                  className="mt-1 w-full rounded-md border border-white/10 bg-white/5 p-3 text-white outline-none focus:border-[#c09318]"
+                />
+              </label>
+              <label className="text-sm text-gray-400 sm:col-span-2">
+                Foto
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => {
+                    const arquivo = event.target.files?.[0] || null;
+                    setImagem(arquivo);
+                    setImagemPreview(
+                      arquivo ? URL.createObjectURL(arquivo) : null,
+                    );
+                  }}
+                  className="mt-1 w-full rounded-md border border-white/10 bg-white/5 p-2 text-white"
+                />
+              </label>
+              <button
+                type="submit"
+                className="rounded bg-[#81700e] px-4 py-2 font-semibold sm:col-span-2"
+              >
+                Salvar alterações
+              </button>
+            </form>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="text-sm text-gray-400">Nome</label>
+                <div className="mt-1 rounded-md border border-white/10 bg-white/5 p-3 text-gray-200">
+                  {usuario.nome || "Não informado"}
+                </div>
+              </div>
+              <div>
+                <label className="text-sm text-gray-400">Apelido</label>
+                <div className="mt-1 rounded-md border border-white/10 bg-white/5 p-3 text-gray-200">
+                  {usuario.apelido || "Não informado"}
+                </div>
+              </div>
+              <div className="sm:col-span-2">
+                <label className="text-sm text-gray-400">Email</label>
+                <div className="mt-1 rounded-md border border-white/10 bg-white/5 p-3 text-gray-400">
+                  {usuario.email || "Não informado"}
+                </div>
               </div>
             </div>
-            <div>
-              <label className="text-sm text-gray-400">Apelido</label>
-              <div className="mt-1 rounded-md border border-white/10 bg-white/5 p-3 text-gray-200">
-                {usuario.apelido || "Não informado"}
-              </div>
-            </div>
-            <div className="sm:col-span-2">
-              <label className="text-sm text-gray-400">Email</label>
-              <div className="mt-1 rounded-md border border-white/10 bg-white/5 p-3 text-gray-400">
-                {usuario.email || "Não informado"}
-              </div>
-            </div>
-          </div>
+          )}
 
           <div className="mt-8">
             <div className="flex flex-wrap gap-2 border-b border-white/10 pb-3">

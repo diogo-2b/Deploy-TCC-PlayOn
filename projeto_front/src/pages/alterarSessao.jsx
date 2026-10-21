@@ -5,6 +5,7 @@ import LightPillar from "../components/LightPillar/LightPillar.jsx";
 import { useAuthContext } from "../context/AuthProvider";
 import { useSessoes } from "../context/SessoesProvider";
 import axiosClient from "../utils/axios-client";
+import Chat from "../components/Chat/Chat.jsx";
 
 const AlterarSessao = () => {
   const { codigo } = useParams();
@@ -23,6 +24,7 @@ const AlterarSessao = () => {
   const [status, setStatus] = useState("aberta");
   const [mensagem, setMensagem] = useState("");
   const [erros, setErros] = useState({});
+  const [chatAberto, setChatAberto] = useState(false);
   const { atualizarSessao, deletarSessao } = useSessoes();
 
   const usuarioLogado =
@@ -262,12 +264,33 @@ const AlterarSessao = () => {
         />
       </div>
 
-      <section className="relative z-10 mx-4 w-full max-w-2xl rounded-2xl border border-white/10 bg-black/40 p-8 shadow-2xl backdrop-blur-md">
+      <div className="relative z-10 mx-4 flex w-full max-w-6xl flex-col items-center gap-4 lg:flex-row lg:items-start lg:justify-center">
+      <section className="w-full max-w-2xl rounded-2xl border border-white/10 bg-black/40 p-8 shadow-2xl backdrop-blur-md">
         <button
           onClick={() => window.history.back()}
           className="mb-4 inline-block rounded-md border-2 border-[#c09318] px-3 py-2 font-bold text-[#c09318]"
         >
           ← Voltar
+        </button>
+        <button
+          type="button"
+          aria-label={chatAberto ? "Fechar chat" : "Abrir chat"}
+          aria-expanded={chatAberto}
+          title={chatAberto ? "Fechar chat" : "Abrir chat"}
+          onClick={() => setChatAberto((aberto) => !aberto)}
+          className="absolute right-4 top-4 rounded-md border border-[#c09318] px-3 py-2 text-[#c09318] transition hover:bg-[#c09318]/10"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M20 11.5a8.5 8.5 0 0 1-8.5 8.5 8.5 8.5 0 0 1-4.1-1.05L3 20l1.05-4.4A8.5 8.5 0 1 1 20 11.5Z" />
+            <path d="M8 11.5h.01M12 11.5h.01M16 11.5h.01" />
+          </svg>
         </button>
 
         {carregando ? (
@@ -558,6 +581,15 @@ const AlterarSessao = () => {
           </div>
         )}
       </section>
+      {!carregando && sessao && (
+        <Chat
+          type="sessao"
+          entityId={sessao.id ?? codigo}
+          user={usuarioLogado}
+          className={`${chatAberto ? "" : "hidden"} w-full max-w-2xl lg:mt-20 lg:max-w-sm`}
+        />
+      )}
+      </div>
     </main>
   );
 };

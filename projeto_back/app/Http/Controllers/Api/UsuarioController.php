@@ -168,6 +168,17 @@ class UsuarioController extends Controller
     public function update(UsuarioUpdateRequest $request, $id, CloudinaryService $cloudinary)
     {
         $usuario = Usuario::findOrFail($id);
+        $usuarioAutenticado = $request->user();
+
+        if (
+            !$usuarioAutenticado ||
+            (!$usuarioAutenticado->is_admin && (int) $usuarioAutenticado->id !== (int) $usuario->id)
+        ) {
+            return response()->json([
+                'message' => 'Você não tem permissão para editar este usuário.',
+            ], 403);
+        }
+
         $data = $request->validated();
 
         if ($request->hasFile('imagem')) {

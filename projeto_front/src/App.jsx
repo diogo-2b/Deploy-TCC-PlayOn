@@ -17,6 +17,7 @@ import AlterarCompeticao from "./pages/alterarCompeticao.jsx";
 import AlterarSessao from "./pages/alterarSessao.jsx";
 import AlterarUsuario from "./pages/alterarUsuario.jsx";
 import VisualizarPerfil from "./pages/visualizarPerfil.jsx";
+import GerenciarDenuncias from "./pages/gerenciarDenuncias.jsx";
 import CadastrarEquipe from "./pages/cadastrarEquipe.jsx";
 import CadastrarCompeticao from "./pages/cadastrarCompeticao.jsx";
 import CadastrarSessao from "./pages/cadastrarSessao.jsx";
@@ -118,6 +119,15 @@ const App = () => {
                       element={
                         <PrivateRoute>
                           <VisualizarPerfil />
+                        </PrivateRoute>
+                      }
+                    />
+
+                    <Route
+                      path="/denuncias"
+                      element={
+                        <PrivateRoute>
+                          <GerenciarDenuncias />
                         </PrivateRoute>
                       }
                     />

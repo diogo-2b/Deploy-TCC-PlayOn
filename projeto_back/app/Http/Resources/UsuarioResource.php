@@ -31,6 +31,7 @@ class UsuarioResource extends JsonResource
             'email' => $this->email ?? null,
             'email_verified_at' => $this->email_verified_at ?? null,
             'firebase_uid' => $this->firebase_uid ?? null,
+            'is_admin' => (bool) $this->is_admin,
             'imagem' => $this->imagem ?? null,
             'imagem_url' => $imagemUrl,
             'created_at' => $this->created_at,

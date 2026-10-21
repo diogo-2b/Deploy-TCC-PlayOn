@@ -4,6 +4,7 @@ import { useCompeticoes } from "../../context/CompeticoesProvider";
 import { useEquipes } from "../../context/EquipesProvider";
 import { useSessoes } from "../../context/SessoesProvider";
 import { useUsuario } from "../../context/UsuarioProvider";
+import { useAuthContext } from "../../context/AuthProvider";
 
 export const NavBar = () => {
   const { searchTerm, setSearchTerm } = useSearch();
@@ -11,6 +12,7 @@ export const NavBar = () => {
   const { data: equipes } = useEquipes();
   const { data: sessoes } = useSessoes();
   const { data: usuarios } = useUsuario();
+  const { user } = useAuthContext();
 
   const modalRef = useRef(null);
   const inputRef = useRef(null);
@@ -86,6 +88,11 @@ export const NavBar = () => {
           <li>
             <a href="/perfil">Perfil</a>
           </li>
+          {user?.is_admin && (
+            <li>
+              <a href="/denuncias">Denúncias</a>
+            </li>
+          )}
         </ul>
 
         <div className="nav-search-container" ref={modalRef}>

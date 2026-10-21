@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Sessao;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\ChatAuthorizationService;
 
 class SessaoJogadoresController extends Controller
 {
@@ -18,7 +19,7 @@ class SessaoJogadoresController extends Controller
         );
     }
 
-    public function store(Request $request, $sessaoId)
+    public function store(Request $request, $sessaoId, ChatAuthorizationService $chatAuthorization)
     {
         $sessao = Sessao::findOrFail($sessaoId);
         $usuarioId = (int) ($request->input('usuario_id') ?? Auth::id());
@@ -48,13 +49,14 @@ class SessaoJogadoresController extends Controller
         }
 
         $sessao->jogadores()->syncWithoutDetaching([$usuarioId]);
+        $chatAuthorization->synchronize('sessao', (int) $sessao->id);
 
         return response()->json([
             'message' => 'Inscrição realizada com sucesso.'
         ], 201);
     }
 
-    public function destroy(Request $request, $sessaoId, $usuarioId)
+    public function destroy(Request $request, $sessaoId, $usuarioId, ChatAuthorizationService $chatAuthorization)
     {
         $sessao = Sessao::findOrFail($sessaoId);
         $usuarioAutenticado = Auth::id();
@@ -85,6 +87,7 @@ class SessaoJogadoresController extends Controller
         }
 
         $sessao->jogadores()->detach($usuarioId);
+        $chatAuthorization->synchronize('sessao', (int) $sessao->id);
 
         return response()->json([
             'message' => 'Você saiu da sessão com sucesso.'

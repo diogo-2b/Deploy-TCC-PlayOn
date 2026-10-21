@@ -77,7 +77,7 @@ class CompeticaoController extends Controller
         $competicao = Competicao::findOrFail($id);
         $user = $request->user();
 
-        if (!$user || (int) $user->id !== (int) $competicao->dono) {
+        if (!$user || (!$user->is_admin && (int) $user->id !== (int) $competicao->dono)) {
             return response()->json([
                 'message' => 'Você não tem permissão para editar esta competição.'
             ], 403);

@@ -1,0 +1,72 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isChatMember(chatKey) {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/chat_access/$(chatKey)/members/$(request.auth.uid));
+    }
+
+    function member(chatKey) {
+      return get(/databases/$(database)/documents/chat_access/$(chatKey)/members/$(request.auth.uid)).data;
+    }
+
+    match /chat_access/{chatKey}/members/{firebaseUid} {
+      allow read, write: if false;
+    }
+
+    match /chats_equipes/{entityId}/mensagens/{messageId} {
+      allow read: if isChatMember("equipe_" + entityId);
+      allow create: if isChatMember("equipe_" + entityId)
+        && request.resource.data.keys().hasOnly([
+          "uid", "id", "id_usuario", "mensagem", "autor_nome", "autor_imagem_url", "timestamp"
+        ])
+        && request.resource.data.uid == messageId
+        && request.resource.data.id == entityId
+        && request.resource.data.id_usuario == member("equipe_" + entityId).user_id
+        && request.resource.data.autor_nome == member("equipe_" + entityId).display_name
+        && request.resource.data.autor_imagem_url == member("equipe_" + entityId).image_url
+        && request.resource.data.mensagem is string
+        && request.resource.data.mensagem.size() > 0
+        && request.resource.data.mensagem.size() <= 500
+        && request.resource.data.timestamp == request.time;
+      allow update, delete: if false;
+    }
+
+    match /chats_competicoes/{entityId}/mensagens/{messageId} {
+      allow read: if isChatMember("competicao_" + entityId);
+      allow create: if isChatMember("competicao_" + entityId)
+        && request.resource.data.keys().hasOnly([
+          "uid", "id", "id_usuario", "mensagem", "autor_nome", "autor_imagem_url", "timestamp"
+        ])
+        && request.resource.data.uid == messageId
+        && request.resource.data.id == entityId
+        && request.resource.data.id_usuario == member("competicao_" + entityId).user_id
+        && request.resource.data.autor_nome == member("competicao_" + entityId).display_name
+        && request.resource.data.autor_imagem_url == member("competicao_" + entityId).image_url
+        && request.resource.data.mensagem is string
+        && request.resource.data.mensagem.size() > 0
+        && request.resource.data.mensagem.size() <= 500
+        && request.resource.data.timestamp == request.time;
+      allow update, delete: if false;
+    }
+
+    match /chats_sessoes/{entityId}/mensagens/{messageId} {
+      allow read: if isChatMember("sessao_" + entityId);
+      allow create: if isChatMember("sessao_" + entityId)
+        && request.resource.data.keys().hasOnly([
+          "uid", "id", "id_usuario", "mensagem", "autor_nome", "autor_imagem_url", "timestamp"
+        ])
+        && request.resource.data.uid == messageId
+        && request.resource.data.id == entityId
+        && request.resource.data.id_usuario == member("sessao_" + entityId).user_id
+        && request.resource.data.autor_nome == member("sessao_" + entityId).display_name
+        && request.resource.data.autor_imagem_url == member("sessao_" + entityId).image_url
+        && request.resource.data.mensagem is string
+        && request.resource.data.mensagem.size() > 0
+        && request.resource.data.mensagem.size() <= 500
+        && request.resource.data.timestamp == request.time;
+      allow update, delete: if false;
+    }
+  }
+}
