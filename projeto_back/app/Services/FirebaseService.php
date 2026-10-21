@@ -4,8 +4,8 @@ namespace App\Services;
 
 use Google\Auth\Credentials\ServiceAccountCredentials;
 use GuzzleHttp\Client;
-use GuzzleHttp\Utils;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Factory;
 
 class FirebaseService
@@ -130,7 +130,21 @@ class FirebaseService
 
     private function caBundle(): string|bool
     {
-        return env('FIREBASE_CA_BUNDLE', true);
+        $configuredBundle = config('firebase.ca_bundle');
+
+        if (!$configuredBundle) {
+            return true;
+        }
+
+        if (is_file($configuredBundle) && is_readable($configuredBundle)) {
+            return $configuredBundle;
+        }
+
+        Log::warning('FIREBASE_CA_BUNDLE não existe ou não pode ser lido; usando o bundle CA do sistema.', [
+            'path' => $configuredBundle,
+        ]);
+
+        return true;
     }
 
     private function encodeFields(array $fields): array
