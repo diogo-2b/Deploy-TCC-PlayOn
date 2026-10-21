@@ -5,7 +5,11 @@ RUN apt-get update && apt-get install -y \
     curl \
     unzip \
     libpq-dev \
+    zlib1g-dev \
     $PHPIZE_DEPS \
+    && if [ -f "/usr/include/$(dpkg-architecture -qDEB_HOST_MULTIARCH)/zconf.h" ] && [ ! -f /usr/include/zconf.h ]; then \
+        ln -s "/usr/include/$(dpkg-architecture -qDEB_HOST_MULTIARCH)/zconf.h" /usr/include/zconf.h; \
+    fi \
     && pecl install grpc \
     && docker-php-ext-enable grpc \
     && docker-php-ext-install pdo pdo_pgsql \
