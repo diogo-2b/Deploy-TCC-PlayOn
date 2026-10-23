@@ -18,6 +18,9 @@ const ListaEquipes = () => {
   const somenteMinhas = searchParams.get("mine") === "1";
   const usuarioId = Number(user?.id || user?.codigo || user?.codigoUsuario || 0);
   const [participacoes, setParticipacoes] = useState({});
+  const [filtroAberto, setFiltroAberto] = useState(false);
+  const [tipoSelecionado, setTipoSelecionado] = useState("");
+  const [tipoFiltrado, setTipoFiltrado] = useState("");
 
   useEffect(() => {
     if (!somenteMinhas || !usuarioId || !equipes) return;
@@ -56,7 +59,7 @@ const ListaEquipes = () => {
     };
   }, [equipes, somenteMinhas, usuarioId]);
 
-  const equipesExibidas = useMemo(
+  const equipesBase = useMemo(
     () =>
       somenteMinhas
         ? (equipes || []).filter(
@@ -65,9 +68,28 @@ const ListaEquipes = () => {
                 equipe.administrador ?? equipe.dono ?? equipe.usuario_id,
               ) === usuarioId || participacoes[equipe.codigo],
           )
-        : equipes,
+        : equipes || [],
     [equipes, participacoes, somenteMinhas, usuarioId],
   );
+
+  const equipesExibidas = useMemo(
+    () =>
+      tipoFiltrado
+        ? equipesBase.filter((equipe) => equipe.tipo === tipoFiltrado)
+        : equipesBase,
+    [equipesBase, tipoFiltrado],
+  );
+
+  const aplicarFiltro = () => {
+    setTipoFiltrado(tipoSelecionado);
+    setFiltroAberto(false);
+  };
+
+  const limparFiltro = () => {
+    setTipoSelecionado("");
+    setTipoFiltrado("");
+    setFiltroAberto(false);
+  };
 
   return (
     <div className="home-body relative overflow-hidden">
@@ -112,6 +134,74 @@ const ListaEquipes = () => {
                 </a>
               </li>
             </ul>
+            <div className="competicao-filtro">
+              <button
+                type="button"
+                className="competicao-filtro-botao"
+                aria-expanded={filtroAberto}
+                aria-controls="equipe-filtro-painel"
+                onClick={() => setFiltroAberto((aberto) => !aberto)}
+              >
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  className="competicao-filtro-icone"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M4 6h16M7 12h10m-7 6h4" />
+                </svg>
+                Filtro
+                {tipoFiltrado && (
+                  <span className="competicao-filtro-resumo">
+                    : {tipoFiltrado}
+                  </span>
+                )}
+              </button>
+              {filtroAberto && (
+                <div
+                  id="equipe-filtro-painel"
+                  className="competicao-filtro-painel"
+                  role="dialog"
+                  aria-label="Filtrar equipes"
+                >
+                  <span className="competicao-filtro-legenda">Visibilidade</span>
+                  <label className="competicao-filtro-opcao">
+                    <input
+                      type="checkbox"
+                      checked={tipoSelecionado === "publico"}
+                      onChange={() =>
+                        setTipoSelecionado((tipo) =>
+                          tipo === "publico" ? "" : "publico",
+                        )
+                      }
+                    />
+                    Público
+                  </label>
+                  <label className="competicao-filtro-opcao">
+                    <input
+                      type="checkbox"
+                      checked={tipoSelecionado === "privado"}
+                      onChange={() =>
+                        setTipoSelecionado((tipo) =>
+                          tipo === "privado" ? "" : "privado",
+                        )
+                      }
+                    />
+                    Privado
+                  </label>
+                  <div className="competicao-filtro-acoes">
+                    <button type="button" onClick={limparFiltro}>
+                      Limpar
+                    </button>
+                    <button type="button" onClick={aplicarFiltro}>
+                      Aplicar filtros
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </nav>
 

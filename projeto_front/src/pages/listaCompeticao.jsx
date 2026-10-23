@@ -24,6 +24,8 @@ const ListaCompeticao = () => {
   const [filtroAberto, setFiltroAberto] = useState(false);
   const [jogoSelecionado, setJogoSelecionado] = useState("");
   const [jogoFiltrado, setJogoFiltrado] = useState("");
+  const [tipoSelecionado, setTipoSelecionado] = useState("");
+  const [tipoFiltrado, setTipoFiltrado] = useState("");
 
   const normalizarTexto = (texto) =>
     String(texto || "")
@@ -99,33 +101,41 @@ const ListaCompeticao = () => {
         )
       : competicoes || [];
 
-    if (!jogoFiltrado) return competicoesBase;
-
-    return competicoesBase.filter(
-      (competicao) =>
+    return competicoesBase.filter((competicao) => {
+      const correspondeAoJogo =
+        !jogoFiltrado ||
         normalizarTexto(competicao.jogo?.nome) ===
-        normalizarTexto(jogoFiltrado),
-    );
+          normalizarTexto(jogoFiltrado);
+      const correspondeAoTipo =
+        !tipoFiltrado || competicao.tipo === tipoFiltrado;
+
+      return correspondeAoJogo && correspondeAoTipo;
+    });
   }, [
     competicoes,
     jogoFiltrado,
     participacoes,
     somenteMinhas,
+    tipoFiltrado,
     usuarioId,
   ]);
 
   const aplicarFiltro = () => {
     setJogoFiltrado(jogoSelecionado.trim());
+    setTipoFiltrado(tipoSelecionado);
     setFiltroAberto(false);
   };
 
   const limparFiltro = () => {
     setJogoSelecionado("");
     setJogoFiltrado("");
+    setTipoSelecionado("");
+    setTipoFiltrado("");
     setFiltroAberto(false);
   };
 
-  const nomeFiltroAtivo = jogoFiltrado;
+  const filtrosAtivos = [jogoFiltrado, tipoFiltrado].filter(Boolean);
+  const nomeFiltroAtivo = filtrosAtivos.join(" - ");
 
   const mensagemVazia = jogoFiltrado
     ? "Nenhuma competição encontrada para este jogo."
@@ -223,6 +233,31 @@ const ListaCompeticao = () => {
                       <option key={jogo.id ?? jogo.igdb_id ?? jogo.nome} value={jogo.nome} />
                     ))}
                   </datalist>
+                  <span className="competicao-filtro-legenda">Visibilidade</span>
+                  <label className="competicao-filtro-opcao">
+                    <input
+                      type="checkbox"
+                      checked={tipoSelecionado === "publico"}
+                      onChange={() =>
+                        setTipoSelecionado((tipo) =>
+                          tipo === "publico" ? "" : "publico",
+                        )
+                      }
+                    />
+                    Público
+                  </label>
+                  <label className="competicao-filtro-opcao">
+                    <input
+                      type="checkbox"
+                      checked={tipoSelecionado === "privado"}
+                      onChange={() =>
+                        setTipoSelecionado((tipo) =>
+                          tipo === "privado" ? "" : "privado",
+                        )
+                      }
+                    />
+                    Privado
+                  </label>
                   <div className="competicao-filtro-acoes">
                     <button type="button" onClick={limparFiltro}>
                       Limpar

@@ -192,6 +192,35 @@ nav.nav-lista {
   color: var(--cor-secundaria);
 }
 
+.competicao-filtro-legenda {
+  color: var(--cor-texto);
+  font-size: 0.9rem;
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+.competicao-filtro-opcao {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--cor-texto);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: normal;
+}
+
+.competicao-filtro-opcao input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  accent-color: var(--cor-destaque);
+  cursor: pointer;
+}
+
 .competicao-filtro-acoes {
   display: flex;
   justify-content: flex-end;
@@ -255,6 +284,11 @@ body.tema-claro .competicao-filtro-painel input:focus {
 
 body.tema-claro .competicao-filtro-painel input::placeholder {
   color: #666;
+}
+
+body.tema-claro .competicao-filtro-legenda,
+body.tema-claro .competicao-filtro-opcao {
+  color: var(--tema-texto-claro);
 }
 
 body.tema-claro .competicao-filtro-acoes button:first-child {
