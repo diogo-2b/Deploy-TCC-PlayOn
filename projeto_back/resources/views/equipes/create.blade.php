@@ -16,7 +16,7 @@
         <table>
             <input type="hidden" name="administrador" value="1"/></td>
             <input type="hidden" name="tipo" value="false"/></td>
-            <input type="hidden" name="imagem" value="foto.png"/></td>
+            <input type="hidden" name="imagem" value="{{ config('app.default_image_url') }}"/></td>
             <tr>
                 <td>Nome:</td>
                 <td><input type="text" name="nome"/></td>

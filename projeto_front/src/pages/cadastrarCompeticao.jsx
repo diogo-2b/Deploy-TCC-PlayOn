@@ -11,6 +11,7 @@ const CadastrarCompeticao = () => {
 
   const [nome, setNome] = useState("");
   const [descricao, setDescricao] = useState("");
+  const [dataEncerramento, setDataEncerramento] = useState("");
   const [dono] = useState(usuario.id || usuario.email || null);
   const [tipo, setTipo] = useState("");
   const [inscricao, setInscricao] = useState("equipe");
@@ -82,6 +83,7 @@ const CadastrarCompeticao = () => {
     const novosErros = {};
     if (!nome.trim()) novosErros.nome = "O nome é obrigatório.";
     if (!descricao.trim()) novosErros.descricao = "A descrição é obrigatória.";
+    if (!dataEncerramento) novosErros.data_encerramento = "A data de encerramento é obrigatória.";
     if (!tipo.trim()) novosErros.tipo = "O tipo é obrigatório.";
     if (!inscricao.trim())
       novosErros.inscricao = "O tipo de inscrição é obrigatório.";
@@ -106,6 +108,7 @@ const CadastrarCompeticao = () => {
       const formData = new FormData();
       formData.append("nome", nome);
       formData.append("descricao", descricao);
+      formData.append("data_encerramento", dataEncerramento);
       formData.append("dono", dono ?? "");
       formData.append(
         "igdb_id",
@@ -213,6 +216,21 @@ const CadastrarCompeticao = () => {
             {erros.descricao && (
               <div className="text-red-500 text-sm mt-1">{erros.descricao}</div>
             )}
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="data_encerramento" className="block text-sm text-gray-300 mb-2">
+              Data de encerramento:
+            </label>
+            <input
+              type="date"
+              id="data_encerramento"
+              value={dataEncerramento}
+              min={new Date().toISOString().slice(0, 10)}
+              onChange={(e) => setDataEncerramento(e.target.value)}
+              className={`w-full p-3 bg-white/5 text-white text-sm rounded-md border outline-none ${erros.data_encerramento ? "border-red-500" : "border-white/10 focus:border-[#c09318]"}`}
+            />
+            {erros.data_encerramento && <div className="text-red-500 text-sm mt-1">{erros.data_encerramento}</div>}
           </div>
 
           {/* Campo de busca de jogo */}

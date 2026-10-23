@@ -1,8 +1,8 @@
 import "./listaSessoes.css";
 
-const ListaSessoes = ({ sessoes }) => {
+const ListaSessoes = ({ sessoes, mensagemVazia }) => {
   if (!sessoes || sessoes.length === 0) {
-    return <p className="lista-sessoes-vazia">Nenhuma sessão encontrada.</p>;
+    return <p className="lista-sessoes-vazia">{mensagemVazia}</p>;
   }
 
   return (

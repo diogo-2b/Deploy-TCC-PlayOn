@@ -21,6 +21,21 @@
   background: rgba(0, 0, 0, 0.84);
 }
 
+body.tema-claro .linha-sessao {
+  color: var(--tema-texto-claro);
+  background: rgba(255, 255, 255, 0.88);
+  border-color: var(--tema-borda-clara);
+}
+
+body.tema-claro .linha-sessao:hover {
+  background: #ffffff;
+  border-color: rgba(162, 118, 0, 0.3);
+}
+
+body.tema-claro .lista-sessoes-vazia {
+  color: var(--tema-texto-claro);
+}
+
 .sessao-nome {
   font-weight: 600;
 }

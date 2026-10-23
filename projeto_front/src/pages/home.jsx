@@ -37,11 +37,11 @@ const Home = () => {
       <main className="main-container relative z-10">
         <NavBar />
         <section className="secao-carrossel">
-          <h2 className="titulo-secao">Competições Recomendadas</h2>
+          <h2 className="titulo-secao">Competições</h2>
           <Carrossel competicao={competicoes || []} />
         </section>
         <section className="secao-carrossel">
-          <h2 className="titulo-secao">Equipes Recomendadas</h2>
+          <h2 className="titulo-secao">Equipes</h2>
           <Carrossel equipe={equipes || []} />
         </section>
         <section className="secao-sessoes">

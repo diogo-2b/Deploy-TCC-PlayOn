@@ -25,7 +25,7 @@ class EquipeFactory extends Factory
         return [
             'nome' => $this->faker->company,
             'descricao' => $this->faker->paragraph,
-            'imagem' => 'foto.png',
+            'imagem' => config('app.default_image_url'),
             'administrador' => $usuario->id,
             'tipo' => $this->faker->boolean(30),
         ];

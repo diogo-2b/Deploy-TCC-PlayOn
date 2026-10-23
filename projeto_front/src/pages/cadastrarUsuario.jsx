@@ -16,6 +16,7 @@ const CadastrarUsuario = () => {
   const [email, setEmail] = useState("");
   const [apelido, setApelido] = useState("");
   const [senha, setSenha] = useState("");
+  const [senhaVisivel, setSenhaVisivel] = useState(false);
   const [imagem, setImagem] = useState(null);
   const [imagemPreview, setImagemPreview] = useState(null);
   const [erros, setErros] = useState({});
@@ -291,13 +292,44 @@ const CadastrarUsuario = () => {
             <label htmlFor="senha" className="block text-sm text-gray-300 mb-2">
               Senha:
             </label>
-            <input
-              type="password"
-              id="senha"
-              value={senha}
-              onChange={atualizarCampo(setSenha)}
-              className={`w-full p-3 bg-white/5 text-white text-sm rounded-md border outline-none placeholder:text-gray-400 backdrop-blur-sm ${erros.senha ? "border-red-500" : "border-white/10 focus:border-[#c09318] focus:ring-1 focus:ring-[#c09318]"}`}
-            />
+            <div className="relative">
+              <input
+                type={senhaVisivel ? "text" : "password"}
+                id="senha"
+                value={senha}
+                onChange={atualizarCampo(setSenha)}
+                className={`w-full p-3 pr-12 bg-white/5 text-white text-sm rounded-md border outline-none placeholder:text-gray-400 backdrop-blur-sm ${erros.senha ? "border-red-500" : "border-white/10 focus:border-[#c09318] focus:ring-1 focus:ring-[#c09318]"}`}
+              />
+              <button
+                type="button"
+                aria-label={senhaVisivel ? "Ocultar senha" : "Mostrar senha"}
+                title={senhaVisivel ? "Ocultar senha" : "Mostrar senha"}
+                onClick={() => setSenhaVisivel((visivel) => !visivel)}
+                className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-gray-400 transition hover:text-[#c09318]"
+              >
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  {senhaVisivel ? (
+                    <>
+                      <path d="M3 3l18 18" />
+                      <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+                      <path d="M9.9 4.2A10.8 10.8 0 0 1 12 4c5 0 8.5 4 9.8 6a17.8 17.8 0 0 1-3.1 3.4M6.2 6.2C3.9 7.6 2.6 10 2.2 10.8 3.5 13 7 17 12 17c1 0 2-.2 2.8-.5" />
+                    </>
+                  ) : (
+                    <>
+                      <path d="M2.2 12C3.5 9 7 5 12 5s8.5 4 9.8 7c-1.3 3-4.8 7-9.8 7s-8.5-4-9.8-7Z" />
+                      <circle cx="12" cy="12" r="2.5" />
+                    </>
+                  )}
+                </svg>
+              </button>
+            </div>
             {erros.senha && (
               <div className="text-red-500 text-sm mt-1">{erros.senha}</div>
             )}

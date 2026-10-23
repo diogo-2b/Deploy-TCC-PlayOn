@@ -42,7 +42,7 @@ Route::prefix('v1')->group(function () {
 
 
 
-    Route::apiResource('competicoes', CompeticaoController::class)->only(['index', 'show']);
+    Route::apiResource('competicoes', CompeticaoController::class)->only(['index']);
     Route::apiResource('equipes', EquipeController::class)->only(['index', 'show']);
     Route::apiResource('usuarios', UsuarioController::class)->only(['store']);
     Route::get('usuarios/busca', [UsuarioController::class, 'busca']);
@@ -58,10 +58,12 @@ Route::prefix('v1')->group(function () {
         Route::get('usuarios/{usuarioId}/steam/recentes', [SteamController::class, 'recentlyPlayedGames']);
         Route::get('chats/{type}/{id}/access', [\App\Http\Controllers\Api\ChatAuthorizationController::class, 'access']);
         Route::post('auth/firebase-token', [\App\Http\Controllers\Api\ChatAuthorizationController::class, 'firebaseToken']);
-        Route::apiResource('competicoes', CompeticaoController::class)->only(['store', 'update', 'destroy']);
+        Route::apiResource('competicoes', CompeticaoController::class)->only(['show', 'store', 'update', 'destroy']);
         Route::apiResource('equipes', EquipeController::class)->only(['store', 'update', 'destroy']);
         Route::apiResource('usuarios', UsuarioController::class)->except(['store']);
         Route::get('minhas-equipes', [UsuarioController::class, 'minhasEquipes']);
+        Route::get('meu-historico-competicoes', [UsuarioController::class, 'historicoCompeticoes']);
+        Route::get('equipes/{id}/historico-competicoes', [EquipeController::class, 'historicoCompeticoes']);
         Route::apiResource('sessoes', SessaoController::class)->only(['store', 'update', 'destroy']);
         Route::post('denuncias', [DenunciaController::class, 'store']);
 

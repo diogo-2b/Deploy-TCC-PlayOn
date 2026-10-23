@@ -5,6 +5,7 @@ import axiosClient from "../utils/axios-client";
 import { useAuthContext } from "../context/AuthProvider";
 import SteamMiniProfile from "../components/SteamMiniProfile/SteamMiniProfile.jsx";
 import RecentSteamGames from "../components/RecentSteamGames/RecentSteamGames.jsx";
+import Card from "../components/Card/Cards.jsx";
 
 const AlterarUsuario = () => {
   const estadosSteam = {
@@ -29,6 +30,10 @@ const AlterarUsuario = () => {
   const [steamCarregando, setSteamCarregando] = useState(true);
   const [steamErro, setSteamErro] = useState("");
   const [steamSecaoAberta, setSteamSecaoAberta] = useState(true);
+  const [aba, setAba] = useState("equipes");
+  const [equipes, setEquipes] = useState([]);
+  const [competicoes, setCompeticoes] = useState([]);
+  const [historico, setHistorico] = useState([]);
   const navigate = useNavigate();
   const { setUser } = useAuthContext();
 
@@ -50,6 +55,23 @@ const AlterarUsuario = () => {
         setNome(parsed.nome || "");
         setEmail(parsed.email || "");
         setApelido(parsed.apelido || "");
+        try {
+          const resposta = await axiosClient.get(
+            `/usuarios/${parsed.id || parsed.codigo || parsed.codigoUsuario}/perfil`,
+          );
+          const dadosEquipes = resposta.data?.equipes?.data || resposta.data?.equipes || [];
+          const dadosCompeticoes = resposta.data?.competicoes?.data || resposta.data?.competicoes || [];
+          setEquipes(dadosEquipes);
+          setCompeticoes(dadosCompeticoes.filter((competicao) => !competicao.encerrada));
+          const historicoResposta = await axiosClient.get("/meu-historico-competicoes");
+          const dadosHistorico = historicoResposta.data?.data || historicoResposta.data || [];
+          setHistorico(dadosHistorico);
+        } catch (error) {
+          console.error("Erro ao carregar equipes e histórico:", error);
+          setEquipes([]);
+          setCompeticoes([]);
+          setHistorico([]);
+        }
       } else {
         setUsuario(null);
       }
@@ -142,6 +164,12 @@ const AlterarUsuario = () => {
   }, [imagemPreview]);
 
   if (!usuario) return <p>Usuário não encontrado.</p>;
+
+  const itensDaAba = aba === "equipes"
+    ? equipes
+    : aba === "competicoes"
+      ? competicoes
+      : historico;
 
   const extrairErrosResposta = (error) => {
     const errosResposta = error?.response?.data?.errors;
@@ -397,6 +425,54 @@ const AlterarUsuario = () => {
                 />
               </>
             )}
+          </section>
+
+          <section className="mt-6 rounded-lg border border-white/10 bg-white/5 p-4">
+            <div className="flex flex-wrap gap-2 border-b border-white/10 pb-3">
+              <button
+                type="button"
+                onClick={() => setAba("equipes")}
+                className={`rounded-md px-4 py-2 font-semibold ${
+                  aba === "equipes" ? "bg-[#81700e] text-white" : "bg-white/10 text-gray-300"
+                }`}
+              >
+                Equipes ({equipes.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setAba("competicoes")}
+                className={`rounded-md px-4 py-2 font-semibold ${
+                  aba === "competicoes" ? "bg-[#81700e] text-white" : "bg-white/10 text-gray-300"
+                }`}
+              >
+                Competições ({competicoes.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setAba("historico")}
+                className={`rounded-md px-4 py-2 font-semibold ${
+                  aba === "historico" ? "bg-[#81700e] text-white" : "bg-white/10 text-gray-300"
+                }`}
+              >
+                Histórico ({historico.length})
+              </button>
+            </div>
+
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              {itensDaAba.length > 0 ? (
+                itensDaAba.map((item) => (
+                  <Card key={item.codigo || item.id} info={item} />
+                ))
+              ) : (
+                <p className="text-gray-300">
+                  {aba === "equipes"
+                    ? "Você ainda não participa de nenhuma equipe."
+                    : aba === "competicoes"
+                      ? "Você ainda não participa de nenhuma competição."
+                      : "Você ainda não possui competições encerradas no histórico."}
+                </p>
+              )}
+            </div>
           </section>
 
           <div className="mt-6 flex gap-2">

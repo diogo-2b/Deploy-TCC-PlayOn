@@ -12,17 +12,22 @@ use App\Services\CloudinaryService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
+use Illuminate\Support\Facades\Auth;
 
 class CompeticaoController extends Controller
 {
     public function index()
     {
-        return CompeticaoResource::collection(Competicao::all());
+        return CompeticaoResource::collection(Competicao::ativas()->with('jogo')->get());
     }
 
     public function show($id)
     {
         $competicao = Competicao::findOrFail($id);
+
+        if ($competicao->isEncerrada() && !$this->usuarioPodeVerEncerrada($competicao)) {
+            return response()->json(['message' => 'Esta competição foi encerrada.'], 403);
+        }
 
         if ($competicao->jogo_id) {
             $competicao->load('jogo');
@@ -76,6 +81,12 @@ class CompeticaoController extends Controller
     {
         $competicao = Competicao::findOrFail($id);
         $user = $request->user();
+
+        if ($competicao->isEncerrada()) {
+            return response()->json([
+                'message' => 'Competições encerradas não podem ser editadas.'
+            ], 422);
+        }
 
         if (!$user || (!$user->is_admin && (int) $user->id !== (int) $competicao->dono)) {
             return response()->json([
@@ -140,5 +151,35 @@ class CompeticaoController extends Controller
         $competicao->delete();
 
         return response()->noContent();
+    }
+
+    private function usuarioPodeVerEncerrada(Competicao $competicao): bool
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return false;
+        }
+
+        if ($user->is_admin || (int) $competicao->dono === (int) $user->id) {
+            return true;
+        }
+
+        return $competicao->participantes()
+            ->where('aprovado', true)
+            ->where(function ($query) use ($user) {
+                $query->where(function ($query) use ($user) {
+                    $query->where('tipo_participante', 'usuario')
+                        ->where('id_participante', $user->id);
+                })->orWhere(function ($query) use ($user) {
+                    $query->where('tipo_participante', 'equipe')
+                        ->whereHas('equipe', function ($teamQuery) use ($user) {
+                            $teamQuery->where('administrador', $user->id)
+                                ->orWhereHas('membros', function ($memberQuery) use ($user) {
+                                    $memberQuery->where('id_usuario', $user->id)
+                                        ->where('aprovado', true);
+                                });
+                        });
+                });
+            })->exists();
     }
 }

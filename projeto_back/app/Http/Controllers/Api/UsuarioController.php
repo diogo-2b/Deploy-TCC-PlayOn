@@ -14,6 +14,7 @@ use App\Services\FirebaseService;
 use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Resources\CompeticaoHistoricoResource;
 class UsuarioController extends Controller
 {
     public function index()
@@ -78,11 +79,66 @@ class UsuarioController extends Controller
             ->orderBy('nome')
             ->get();
 
+        $visualizador = request()->user();
+        $competicoes = $competicoes->map(function ($competicao) use ($visualizador, $usuario) {
+            $podeVerDetalhes = $visualizador && (
+                $visualizador->is_admin ||
+                (int) $visualizador->id === (int) $usuario->id ||
+                (int) $competicao->dono === (int) $visualizador->id
+            );
+
+            if (!$competicao->isEncerrada() || $podeVerDetalhes) {
+                return array_merge(
+                    (new CompeticaoResource($competicao))->resolve(),
+                    ['acesso_detalhes' => (bool) $podeVerDetalhes || !$competicao->isEncerrada()]
+                );
+            }
+
+            return array_merge(
+                (new CompeticaoHistoricoResource($competicao))->resolve(),
+                ['acesso_detalhes' => false]
+            );
+        });
+
         return response()->json([
             'usuario' => new UsuarioResource($usuario),
             'equipes' => EquipeResource::collection($equipes),
-            'competicoes' => CompeticaoResource::collection($competicoes),
+            'competicoes' => $competicoes,
         ]);
+    }
+
+    public function historicoCompeticoes(Request $request)
+    {
+        $usuario = $request->user();
+
+        $competicoes = \App\Models\Competicao::query()
+            ->where('data_encerramento', '<', now(config('app.timezone'))->toDateString())
+            ->where(function ($query) use ($usuario) {
+                $query->where('dono', $usuario->id)
+                    ->orWhereHas('participantes', function ($participantQuery) use ($usuario) {
+                        $participantQuery
+                            ->where('tipo_participante', 'usuario')
+                            ->where('id_participante', $usuario->id)
+                            ->where('aprovado', true);
+                    })
+                    ->orWhereHas('participantes', function ($participantQuery) use ($usuario) {
+                        $participantQuery
+                            ->where('tipo_participante', 'equipe')
+                            ->where('aprovado', true)
+                            ->whereHas('equipe', function ($teamQuery) use ($usuario) {
+                                $teamQuery->where('administrador', $usuario->id)
+                                    ->orWhereHas('membros', function ($memberQuery) use ($usuario) {
+                                        $memberQuery
+                                            ->where('id_usuario', $usuario->id)
+                                            ->where('aprovado', true);
+                                    });
+                            });
+                    });
+            })
+            ->orderByDesc('data_encerramento')
+            ->get();
+
+        return CompeticaoResource::collection($competicoes);
     }
 
     public function store(UsuarioStoreRequest $request, CloudinaryService $cloudinary)

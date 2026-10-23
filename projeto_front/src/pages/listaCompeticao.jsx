@@ -21,6 +21,16 @@ const ListaCompeticao = () => {
   const usuarioId = Number(user?.id || user?.codigo || user?.codigoUsuario || 0);
 
   const [participacoes, setParticipacoes] = useState({});
+  const [filtroAberto, setFiltroAberto] = useState(false);
+  const [jogoSelecionado, setJogoSelecionado] = useState("");
+  const [jogoFiltrado, setJogoFiltrado] = useState("");
+
+  const normalizarTexto = (texto) =>
+    String(texto || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLocaleLowerCase()
+      .trim();
 
   useEffect(() => {
     if (!somenteMinhas || !usuarioId || !competicoes) return;
@@ -70,17 +80,58 @@ const ListaCompeticao = () => {
     };
   }, [competicoes, equipes, somenteMinhas, usuarioId]);
 
-  const competicoesExibidas = useMemo(
-    () =>
-      somenteMinhas
-        ? (competicoes || []).filter(
-            (competicao) =>
-              Number(competicao.dono ?? competicao.usuario_id) === usuarioId ||
-              participacoes[competicao.codigo],
-          )
-        : competicoes,
-    [competicoes, participacoes, somenteMinhas, usuarioId],
-  );
+  const jogosDisponiveis = useMemo(() => {
+    const jogos = (competicoes || [])
+      .map((competicao) => competicao.jogo)
+      .filter((jogo) => jogo?.nome);
+
+    return Array.from(
+      new Map(jogos.map((jogo) => [jogo.id ?? jogo.igdb_id ?? jogo.nome, jogo])).values(),
+    ).sort((primeiro, segundo) => primeiro.nome.localeCompare(segundo.nome));
+  }, [competicoes]);
+
+  const competicoesExibidas = useMemo(() => {
+    const competicoesBase = somenteMinhas
+      ? (competicoes || []).filter(
+          (competicao) =>
+            Number(competicao.dono ?? competicao.usuario_id) === usuarioId ||
+            participacoes[competicao.codigo],
+        )
+      : competicoes || [];
+
+    if (!jogoFiltrado) return competicoesBase;
+
+    return competicoesBase.filter(
+      (competicao) =>
+        normalizarTexto(competicao.jogo?.nome) ===
+        normalizarTexto(jogoFiltrado),
+    );
+  }, [
+    competicoes,
+    jogoFiltrado,
+    participacoes,
+    somenteMinhas,
+    usuarioId,
+  ]);
+
+  const aplicarFiltro = () => {
+    setJogoFiltrado(jogoSelecionado.trim());
+    setFiltroAberto(false);
+  };
+
+  const limparFiltro = () => {
+    setJogoSelecionado("");
+    setJogoFiltrado("");
+    setFiltroAberto(false);
+  };
+
+  const nomeFiltroAtivo = jogoFiltrado;
+
+  const mensagemVazia = jogoFiltrado
+    ? "Nenhuma competição encontrada para este jogo."
+    : somenteMinhas
+      ? "Você ainda não participa de nenhuma competição."
+      : "Nenhuma competição encontrada.";
 
   return (
     <div className="home-body relative overflow-hidden">
@@ -125,6 +176,64 @@ const ListaCompeticao = () => {
                 </a>
               </li>
             </ul>
+            <div className="competicao-filtro">
+              <button
+                type="button"
+                className="competicao-filtro-botao"
+                aria-expanded={filtroAberto}
+                aria-controls="competicao-filtro-painel"
+                onClick={() => setFiltroAberto((aberto) => !aberto)}
+              >
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  className="competicao-filtro-icone"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M4 6h16M7 12h10m-7 6h4" />
+                </svg>
+                Filtro
+                {nomeFiltroAtivo && (
+                  <span className="competicao-filtro-resumo">
+                    : {nomeFiltroAtivo}
+                  </span>
+                )}
+              </button>
+              {filtroAberto && (
+                <div
+                  id="competicao-filtro-painel"
+                  className="competicao-filtro-painel"
+                  role="dialog"
+                  aria-label="Filtrar competições"
+                >
+                  <label htmlFor="filtro-jogo">Jogo</label>
+                  <input
+                    id="filtro-jogo"
+                    type="search"
+                    list="jogos-disponiveis"
+                    placeholder="Digite o nome do jogo"
+                    autoComplete="off"
+                    value={jogoSelecionado}
+                    onChange={(event) => setJogoSelecionado(event.target.value)}
+                  />
+                  <datalist id="jogos-disponiveis">
+                    {jogosDisponiveis.map((jogo) => (
+                      <option key={jogo.id ?? jogo.igdb_id ?? jogo.nome} value={jogo.nome} />
+                    ))}
+                  </datalist>
+                  <div className="competicao-filtro-acoes">
+                    <button type="button" onClick={limparFiltro}>
+                      Limpar
+                    </button>
+                    <button type="button" onClick={aplicarFiltro}>
+                      Aplicar filtros
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </nav>
 
@@ -156,9 +265,7 @@ const ListaCompeticao = () => {
               ))
             ) : (
               <p className="text-gray-300">
-                {somenteMinhas
-                  ? "Você ainda não participa de nenhuma competição."
-                  : "Nenhuma competição encontrada."}
+                {mensagemVazia}
               </p>
             )}
           </div>

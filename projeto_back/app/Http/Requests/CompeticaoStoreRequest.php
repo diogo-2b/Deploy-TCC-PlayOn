@@ -23,6 +23,7 @@ class CompeticaoStoreRequest extends FormRequest
             'igdb_id' => 'nullable|integer|min:1',
             'jogo_nome' => 'required_with:igdb_id|string|max:255',
             'jogo_capa_url' => 'nullable|url|max:2048',
+            'data_encerramento' => 'required|date|date_format:Y-m-d|after_or_equal:today',
         ];
     }
 

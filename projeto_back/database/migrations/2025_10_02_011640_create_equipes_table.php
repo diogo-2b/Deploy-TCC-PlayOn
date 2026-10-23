@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nome');
             $table->text('descricao');
-            $table->string('imagem')->default('foto.png');
+            $table->string('imagem')->default('https://res.cloudinary.com/ddpuzfnbd/image/upload/v1792605154/playon/equipes/22463a4f-6b4a-4864-971a-ccebc628ec7e.png');
             $table->integer('administrador');
             $table->boolean('tipo')->default(false); //false é publico e true é privado
             $table->timestamps();

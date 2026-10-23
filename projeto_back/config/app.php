@@ -15,6 +15,11 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    'default_image_url' => env(
+        'DEFAULT_IMAGE_URL',
+        'https://res.cloudinary.com/ddpuzfnbd/image/upload/v1792605154/playon/equipes/22463a4f-6b4a-4864-971a-ccebc628ec7e.png'
+    ),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment
@@ -65,7 +70,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'America/Sao_Paulo'),
 
     /*
     |--------------------------------------------------------------------------

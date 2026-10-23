@@ -22,10 +22,11 @@ class CompeticaoFactory extends Factory
         return [
         'nome' => $this->faker->company,
         'descricao' => $this->faker->paragraph,
-        'imagem' => 'foto.png',
+        'imagem' => config('app.default_image_url'),
         'dono' => Usuario::inRandomOrder()->first()->id,
         'tipo' => $this->faker->boolean(30),
         'inscricao' => $this->faker->boolean(30),
+        'data_encerramento' => $this->faker->dateTimeBetween('today', '+1 year')->format('Y-m-d'),
     ];
     }
 }

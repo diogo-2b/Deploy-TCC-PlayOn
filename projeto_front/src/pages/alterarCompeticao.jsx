@@ -15,6 +15,7 @@ const AlterarCompeticao = () => {
   const [carregando, setCarregando] = useState(true);
   const [nome, setNome] = useState("");
   const [descricao, setDescricao] = useState("");
+  const [dataEncerramento, setDataEncerramento] = useState("");
   const [tipo, setTipo] = useState("");
   const [inscricao, setInscricao] = useState("");
   const [imagem, setImagem] = useState(null);
@@ -87,7 +88,7 @@ const AlterarCompeticao = () => {
   const isOwner =
     competicao &&
     Number(competicao.dono ?? competicao.usuario_id ?? 0) === usuarioLogadoId;
-  const podeEditar = Boolean(isOwner || usuarioLogado?.is_admin);
+  const podeEditar = Boolean((isOwner || usuarioLogado?.is_admin) && !competicao?.encerrada);
 
   const carregarParticipantes = useCallback(
     async (owner = isOwner) => {
@@ -128,6 +129,7 @@ const AlterarCompeticao = () => {
         setCompeticao(data);
         setNome(data.nome || "");
         setDescricao(data.descricao || "");
+        setDataEncerramento(data.data_encerramento || "");
         setTipo(data.tipo ? "publico" : "privado");
         setInscricao(data.inscricao ? "equipe" : "pessoa");
         setJogoSelecionado(data.jogo || null);
@@ -219,10 +221,15 @@ const AlterarCompeticao = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
+    if (!dataEncerramento) {
+      setMensagem("A data de encerramento é obrigatória.");
+      return;
+    }
     try {
       const formData = new FormData();
       formData.append("nome", nome);
       formData.append("descricao", descricao);
+      formData.append("data_encerramento", dataEncerramento);
       if (tipo === "publico") formData.append("tipo", "1");
       if (inscricao === "equipe") formData.append("inscricao", "1");
       if (imagem) formData.append("imagem", imagem);
@@ -482,6 +489,16 @@ const AlterarCompeticao = () => {
               className="mb-3 min-h-28 rounded-md border border-white/10 bg-white/5 p-3 text-sm text-white outline-none backdrop-blur-sm placeholder:text-gray-400 focus:border-[#c09318] focus:ring-1 focus:ring-[#c09318]"
             />
 
+            <label className="text-sm text-gray-400">Data de encerramento:</label>
+            <input
+              type="date"
+              value={dataEncerramento}
+              min={new Date().toISOString().slice(0, 10)}
+              onChange={(e) => setDataEncerramento(e.target.value)}
+              className="mb-3 rounded-md border border-white/10 bg-white/5 p-3 text-sm text-white outline-none focus:border-[#c09318]"
+              required
+            />
+
             <label className="text-sm text-gray-400">Jogo:</label>
             <input
               value={buscaJogo}
@@ -700,6 +717,9 @@ const AlterarCompeticao = () => {
           <div className="flex flex-col gap-3">
             <h2 className="text-center text-xl font-semibold">{nome}</h2>
             <p className="text-sm text-gray-300">{descricao}</p>
+            <p className="text-sm text-gray-400">
+              Encerramento: {dataEncerramento || "Não informado"}
+            </p>
             <p className="text-sm text-gray-400">
               Tipo: {tipo === "publico" ? "Público" : "Privado"}
             </p>

@@ -17,13 +17,12 @@ class EquipeResource extends JsonResource
     public function toArray(Request $request): array
     {
         $imagemUrl = null;
-        if (!empty($this->imagem)) {
+        if (!empty($this->imagem) && $this->imagem !== 'foto.png') {
             $imagemUrl = Str::startsWith($this->imagem, ['http://', 'https://'])
                 ? $this->imagem
                 : asset(Storage::url('equipes/' . $this->imagem));
         } else {
-            // fallback para imagem padrão embutida no public
-            $imagemUrl = asset('imagens/foto.png');
+            $imagemUrl = config('app.default_image_url');
         }
 
         return [

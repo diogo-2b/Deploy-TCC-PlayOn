@@ -16,12 +16,12 @@ class UsuarioResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        if (!empty($this->imagem)) {
+        if (!empty($this->imagem) && $this->imagem !== 'foto.png') {
             $imagemUrl = Str::startsWith($this->imagem, ['http://', 'https://'])
                 ? $this->imagem
                 : asset(Storage::url('usuarios/' . $this->imagem));
         } else {
-            $imagemUrl = asset('imagens/foto.png');
+            $imagemUrl = config('app.default_image_url');
         }
 
         return [

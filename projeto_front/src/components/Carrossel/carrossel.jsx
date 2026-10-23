@@ -6,10 +6,8 @@ import "swiper/css";
 import "swiper/css/navigation";
 
 const Carrossel = ({ equipe, competicao }) => {
-  const maxCards = 5;
-
   const items = useMemo(() => {
-    return equipe || competicao || [];
+    return (equipe || competicao || []).filter((item) => !item.encerrada);
   }, [equipe, competicao]);
 
   return (
@@ -19,11 +17,12 @@ const Carrossel = ({ equipe, competicao }) => {
         modules={[Navigation]}
         navigation
         slidesPerView="auto"
-        centerInsufficientSlides={items.length < maxCards}
+        centerInsufficientSlides
         spaceBetween={15}
         watchOverflow
+        loop={items.length > 1}
       >
-        {items.slice(0, maxCards).map((item, index) => (
+        {items.map((item, index) => (
           <SwiperSlide key={item.id || index}>
             <Card info={item} />
           </SwiperSlide>

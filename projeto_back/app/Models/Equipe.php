@@ -31,8 +31,8 @@ class Equipe extends Model
 
     public function getImagemUrlAttribute(): string
     {
-        if (empty($this->imagem)) {
-            return asset('imagens/foto.png');
+        if (empty($this->imagem) || $this->imagem === 'foto.png') {
+            return config('app.default_image_url');
         }
 
         return Str::startsWith($this->imagem, ['http://', 'https://'])

@@ -1,5 +1,5 @@
 import Skeleton from "react-loading-skeleton";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 import LightPillar from "../components/LightPillar/LightPillar.jsx";
 import { Header } from "../components/Header/Header.jsx";
@@ -16,7 +16,18 @@ const ListaSessoes = () => {
   const [searchParams] = useSearchParams();
   const somenteMinhas = searchParams.get("mine") === "1";
   const usuarioId = Number(user?.id || user?.codigo || user?.codigoUsuario || 0);
-  const sessoesExibidas = useMemo(
+  const [filtroAberto, setFiltroAberto] = useState(false);
+  const [jogoSelecionado, setJogoSelecionado] = useState("");
+  const [jogoFiltrado, setJogoFiltrado] = useState("");
+
+  const normalizarTexto = (texto) =>
+    String(texto || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLocaleLowerCase()
+      .trim();
+
+  const sessoesBase = useMemo(
     () =>
       somenteMinhas
         ? (sessoes || []).filter(
@@ -27,9 +38,47 @@ const ListaSessoes = () => {
                   (jogador) => Number(jogador.id) === usuarioId,
                 )),
           )
-        : sessoes,
+        : sessoes || [],
     [sessoes, somenteMinhas, usuarioId],
   );
+
+  const jogosDisponiveis = useMemo(() => {
+    const jogos = sessoesBase
+      .map((sessao) => sessao.jogo)
+      .filter((jogo) => jogo?.nome);
+
+    return Array.from(
+      new Map(jogos.map((jogo) => [jogo.id ?? jogo.igdb_id ?? jogo.nome, jogo])).values(),
+    ).sort((primeiro, segundo) => primeiro.nome.localeCompare(segundo.nome));
+  }, [sessoesBase]);
+
+  const sessoesExibidas = useMemo(
+    () =>
+      jogoFiltrado
+        ? sessoesBase.filter(
+            (sessao) =>
+              normalizarTexto(sessao.jogo?.nome) === normalizarTexto(jogoFiltrado),
+          )
+        : sessoesBase,
+    [jogoFiltrado, sessoesBase],
+  );
+
+  const aplicarFiltro = () => {
+    setJogoFiltrado(jogoSelecionado.trim());
+    setFiltroAberto(false);
+  };
+
+  const limparFiltro = () => {
+    setJogoSelecionado("");
+    setJogoFiltrado("");
+    setFiltroAberto(false);
+  };
+
+  const mensagemVazia = jogoFiltrado
+    ? "Nenhuma sessão encontrada para este jogo."
+    : somenteMinhas
+      ? "Você ainda não participa de nenhuma sessão."
+      : "Nenhuma sessão encontrada.";
 
   return (
     <div className="home-body relative overflow-hidden">
@@ -54,7 +103,7 @@ const ListaSessoes = () => {
 
       <main className="main-container relative z-10">
         <NavBar />
-        <nav className="my-4 relative z-0">
+        <nav className="nav-lista my-4 relative z-0">
           <div className="nav-container w-full">
             <ul className="flex justify-center space-x-6 w-full">
               <li>
@@ -74,6 +123,67 @@ const ListaSessoes = () => {
                 </a>
               </li>
             </ul>
+            <div className="competicao-filtro">
+              <button
+                type="button"
+                className="competicao-filtro-botao"
+                aria-expanded={filtroAberto}
+                aria-controls="sessao-filtro-painel"
+                onClick={() => setFiltroAberto((aberto) => !aberto)}
+              >
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  className="competicao-filtro-icone"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M4 6h16M7 12h10m-7 6h4" />
+                </svg>
+                Filtro
+                {jogoFiltrado && (
+                  <span className="competicao-filtro-resumo">
+                    : {jogoFiltrado}
+                  </span>
+                )}
+              </button>
+              {filtroAberto && (
+                <div
+                  id="sessao-filtro-painel"
+                  className="competicao-filtro-painel"
+                  role="dialog"
+                  aria-label="Filtrar sessões"
+                >
+                  <label htmlFor="filtro-jogo-sessao">Jogo</label>
+                  <input
+                    id="filtro-jogo-sessao"
+                    type="search"
+                    list="jogos-sessoes-disponiveis"
+                    placeholder="Digite o nome do jogo"
+                    autoComplete="off"
+                    value={jogoSelecionado}
+                    onChange={(event) => setJogoSelecionado(event.target.value)}
+                  />
+                  <datalist id="jogos-sessoes-disponiveis">
+                    {jogosDisponiveis.map((jogo) => (
+                      <option
+                        key={jogo.id ?? jogo.igdb_id ?? jogo.nome}
+                        value={jogo.nome}
+                      />
+                    ))}
+                  </datalist>
+                  <div className="competicao-filtro-acoes">
+                    <button type="button" onClick={limparFiltro}>
+                      Limpar
+                    </button>
+                    <button type="button" onClick={aplicarFiltro}>
+                      Aplicar filtros
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </nav>
 
@@ -98,7 +208,10 @@ const ListaSessoes = () => {
               ))}
             </div>
           ) : (
-            <ListaSessoesComponent sessoes={sessoesExibidas || []} />
+            <ListaSessoesComponent
+              sessoes={sessoesExibidas}
+              mensagemVazia={mensagemVazia}
+            />
           )}
         </section>
       </main>

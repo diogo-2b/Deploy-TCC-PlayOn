@@ -8,6 +8,8 @@ use App\Http\Requests\EquipeStoreRequest;
 use App\Http\Requests\EquipeUpdateRequest;
 use App\Http\Resources\EquipeResource;
 use App\Services\CloudinaryService;
+use App\Models\Competicao;
+use Illuminate\Http\Request;
 
 class EquipeController extends Controller
 {
@@ -19,6 +21,33 @@ class EquipeController extends Controller
     public function show($id)
     {
         return new EquipeResource(Equipe::findOrFail($id));
+    }
+
+    public function historicoCompeticoes(Request $request, $id)
+    {
+        $equipe = Equipe::with('membros')->findOrFail($id);
+        $usuario = $request->user();
+        $membroAtual = $usuario && (
+            (int) $equipe->administrador === (int) $usuario->id ||
+            $equipe->membros->contains(function ($membro) use ($usuario) {
+                return (int) $membro->id_usuario === (int) $usuario->id
+                    && (bool) $membro->aprovado;
+            })
+        );
+
+        if (!$membroAtual && (!$usuario || !$usuario->is_admin)) {
+            return response()->json(['message' => 'Não autorizado'], 403);
+        }
+
+        $competicoes = Competicao::whereHas('participantes', function ($query) use ($id) {
+            $query->where('tipo_participante', 'equipe')
+                ->where('id_participante', $id)
+                ->where('aprovado', true);
+        })->where('data_encerramento', '<', now()->toDateString())
+            ->orderByDesc('data_encerramento')
+            ->get();
+
+        return CompeticaoResource::collection($competicoes);
     }
 
     public function store(EquipeStoreRequest $request, CloudinaryService $cloudinary)

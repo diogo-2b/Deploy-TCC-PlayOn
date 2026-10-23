@@ -1,7 +1,6 @@
 /* eslint-disable react/prop-types */
 import { createContext, useContext, useState, useEffect } from 'react';
 import axiosClient, { BASE_URL } from '../utils/axios-client';
-import { mockedCompeticoes } from '../mocks/mockedCompeticoes';
 
 export const CompeticoesContext = createContext({
   data: null,
@@ -33,6 +32,7 @@ const CompeticoesProvider = ({ children }) => {
         id: it.id ?? it.codigo,
         nome: it.nome,
         descricao: it.descricao,
+        jogo: it.jogo ?? null,
         imagem: it.imagem ?? null,
         imagem_url: it.imagem_url ?? (it.imagem ? `${(BASE_URL || '').replace(/\/api\/v\d+\/?$/i, '')}/storage/competicoes/${it.imagem}` : null),
         dono: it.dono ?? null,
@@ -40,9 +40,11 @@ const CompeticoesProvider = ({ children }) => {
         inscricao: typeof it.inscricao === 'boolean' ? (it.inscricao ? 'equipe' : 'pessoa') : it.inscricao,
         created_at: it.created_at,
         updated_at: it.updated_at,
+        data_encerramento: it.data_encerramento ?? null,
+        encerrada: Boolean(it.encerrada),
       }));
 
-      setData(mapped.length ? mapped : mockedCompeticoes);
+      setData(mapped.filter((item) => !item.encerrada));
       setLoading(false);
     } catch (error) {
       console.error('Erro ao carregar competições:', error);
