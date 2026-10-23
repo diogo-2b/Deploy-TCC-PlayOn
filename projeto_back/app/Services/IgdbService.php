@@ -23,7 +23,8 @@ class IgdbService
                     );
                 }
 
-                $response = Http::asForm()
+                $response = $this->httpClient()
+                    ->asForm()
                     ->post(
                         'https://id.twitch.tv/oauth2/token',
                         [
@@ -62,7 +63,7 @@ class IgdbService
             . 'search "' . addcslashes($search, "\\\"") . '"; '
             . 'limit 10;';
 
-        $response = Http::withHeaders([
+        $response = $this->httpClient()->withHeaders([
             'Client-ID' => $clientId,
             'Authorization' => 'Bearer ' . $this->getAccessToken(),
             'Accept' => 'application/json',
@@ -89,5 +90,28 @@ class IgdbService
             })
             ->values()
             ->all();
+    }
+
+    private function httpClient(): \Illuminate\Http\Client\PendingRequest
+    {
+        $request = Http::withOptions([]);
+        $caBundle = config('services.igdb.ca_bundle');
+
+        if (is_string($caBundle) && $caBundle !== '' && is_readable($caBundle)) {
+            return $request->withOptions(['verify' => $caBundle]);
+        }
+
+        return $request;
+    }
+
+    public function findCoverByName(string $name): ?string
+    {
+        $cacheKey = 'igdb_cover:' . sha1(mb_strtolower(trim($name)));
+
+        return Cache::remember($cacheKey, now()->addHours(6), function () use ($name): ?string {
+            $game = $this->searchGames($name)[0] ?? null;
+
+            return $game['capa_url'] ?? null;
+        });
     }
 }

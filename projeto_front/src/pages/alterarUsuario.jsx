@@ -3,8 +3,19 @@ import { useNavigate } from "react-router";
 import LightPillar from "../components/LightPillar/LightPillar.jsx";
 import axiosClient from "../utils/axios-client";
 import { useAuthContext } from "../context/AuthProvider";
+import SteamMiniProfile from "../components/SteamMiniProfile/SteamMiniProfile.jsx";
+import RecentSteamGames from "../components/RecentSteamGames/RecentSteamGames.jsx";
 
 const AlterarUsuario = () => {
+  const estadosSteam = {
+    0: "Offline",
+    1: "Online",
+    2: "Ocupado",
+    3: "Ausente",
+    4: "Soneca",
+    5: "Procurando troca",
+    6: "Procurando partida",
+  };
   const [usuario, setUsuario] = useState(null);
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -14,6 +25,10 @@ const AlterarUsuario = () => {
   const [imagemPreview, setImagemPreview] = useState(null);
   const [mensagem, setMensagem] = useState("");
   const [erros, setErros] = useState({});
+  const [steam, setSteam] = useState(null);
+  const [steamCarregando, setSteamCarregando] = useState(true);
+  const [steamErro, setSteamErro] = useState("");
+  const [steamSecaoAberta, setSteamSecaoAberta] = useState(true);
   const navigate = useNavigate();
   const { setUser } = useAuthContext();
 
@@ -41,6 +56,78 @@ const AlterarUsuario = () => {
     };
     fetch();
   }, []);
+
+  useEffect(() => {
+    const carregarSteam = async () => {
+      try {
+        const resposta = await axiosClient.get("/steam/status");
+        const dadosUsuario = resposta.data?.data || resposta.data;
+        setSteam(dadosUsuario?.steam || null);
+        setUsuario((atual) => ({ ...atual, steam: dadosUsuario?.steam || null }));
+        setUser(dadosUsuario);
+        const resultado = new URLSearchParams(window.location.search).get("steam");
+        const motivo = new URLSearchParams(window.location.search).get("reason");
+        if (resultado === "linked") setMensagem("Conta Steam vinculada com sucesso.");
+        if (resultado === "cancelled") setSteamErro("A autenticação Steam foi cancelada.");
+        if (resultado === "error") {
+          const mensagens = {
+            state: "A autenticação Steam expirou. Tente novamente.",
+            openid: "A resposta da Steam não pôde ser validada. Tente novamente.",
+            openid_namespace: "A Steam retornou um formato OpenID incompatível. Tente novamente.",
+            openid_mode: "A Steam não concluiu a autenticação OpenID. Tente novamente.",
+            openid_identity: "Não foi possível confirmar a identidade da conta Steam.",
+            openid_id: "A Steam retornou um identificador de conta inválido.",
+            openid_return_to: "O callback local da Steam não corresponde à configuração do backend. Confira APP_URL/STEAM_OPENID_RETURN_TO e limpe o cache.",
+            openid_signed: "A Steam não retornou a lista de campos assinados.",
+            openid_signed_field: "A Steam retornou uma resposta OpenID incompleta.",
+            openid_sig: "A Steam não retornou a assinatura OpenID necessária.",
+            openid_parameter: "A resposta OpenID da Steam contém um parâmetro inválido.",
+            openid_connection: "O backend não conseguiu conectar à Steam. Verifique o certificado CA e tente novamente.",
+            openid_signature: "A assinatura da resposta da Steam não pôde ser validada.",
+            summary: "Não foi possível obter os dados públicos dessa conta Steam. Verifique se a chave Steam está configurada no backend.",
+            association: "Essa conta Steam já está vinculada a outro usuário.",
+            storage: "Não foi possível salvar a vinculação Steam no banco de dados.",
+          };
+          setSteamErro(mensagens[motivo] || "Não foi possível vincular esta conta Steam.");
+        }
+      } catch (error) {
+        setSteamErro(error?.response?.data?.message || "Não foi possível carregar a conta Steam.");
+      } finally {
+        setSteamCarregando(false);
+      }
+    };
+    carregarSteam();
+  }, [setUser]);
+
+  const vincularSteam = async () => {
+    setSteamErro("");
+    setSteamCarregando(true);
+    try {
+      const resposta = await axiosClient.get("/steam/start");
+      window.location.assign(resposta.data.authorization_url);
+    } catch (error) {
+      setSteamErro(error?.response?.data?.message || "Não foi possível iniciar a autenticação Steam.");
+      setSteamCarregando(false);
+    }
+  };
+
+  const desvincularSteam = async () => {
+    if (!confirm("Deseja desvincular sua conta Steam?")) return;
+    setSteamErro("");
+    setSteamCarregando(true);
+    try {
+      const resposta = await axiosClient.delete("/steam/link");
+      const atualizado = resposta.data?.user?.data || resposta.data?.user;
+      setSteam(atualizado?.steam || null);
+      setUsuario((atual) => ({ ...atual, steam: null }));
+      setUser(atualizado);
+      setMensagem("Conta Steam desvinculada.");
+    } catch (error) {
+      setSteamErro(error?.response?.data?.message || "Não foi possível desvincular a conta Steam.");
+    } finally {
+      setSteamCarregando(false);
+    }
+  };
 
   useEffect(() => {
     return () => {
@@ -242,7 +329,77 @@ const AlterarUsuario = () => {
             />
           )}
 
-          <div className="flex gap-2">
+          <section className="relative mt-6 rounded-lg border border-white/10 bg-white/5 p-4">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-lg font-semibold text-[#c09318]">Conta Steam</h2>
+              <button
+                type="button"
+                aria-label={steamSecaoAberta ? "Minimizar seção Steam" : "Expandir seção Steam"}
+                aria-expanded={steamSecaoAberta}
+                onClick={() => setSteamSecaoAberta((atual) => !atual)}
+                className="rounded px-2 py-1 text-xl leading-none text-[#c09318] transition hover:bg-white/10"
+              >
+                {steamSecaoAberta ? "↑" : "↓"}
+              </button>
+            </div>
+            {steamSecaoAberta && (
+              <>
+                {steamCarregando ? (
+                  <p className="text-sm text-gray-300">
+                    Carregando dados da Steam...
+                  </p>
+                ) : steam ? (
+                  <div className="flex flex-wrap items-center gap-4">
+                    {steam.avatar && (
+                      <img
+                        src={steam.avatar}
+                        alt=""
+                        className="h-16 w-16 rounded-full"
+                      />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold">
+                        {steam.personaname || "Nome indisponível"}
+                      </p>
+                      <SteamMiniProfile steam={steam} />
+                      {steam.personastate !== null &&
+                        steam.personastate !== undefined && (
+                          <p className="text-sm text-gray-300">
+                            Estado:{" "}
+                            {estadosSteam[Number(steam.personastate)] ||
+                              "Indisponível"}
+                          </p>
+                        )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={desvincularSteam}
+                      className="rounded bg-red-700 px-3 py-2 text-sm"
+                    >
+                      Desvincular
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={vincularSteam}
+                    className="rounded bg-[#81700e] px-4 py-2 font-semibold"
+                  >
+                    Vincular conta Steam
+                  </button>
+                )}
+                {steamErro && (
+                  <p className="mt-3 text-sm text-red-300">{steamErro}</p>
+                )}
+                <RecentSteamGames
+                  usuarioId={usuario.id || usuario.codigo || usuario.codigoUsuario}
+                  hasSteam={Boolean(steam)}
+                />
+              </>
+            )}
+          </section>
+
+          <div className="mt-6 flex gap-2">
             <button type="submit" className="flex-1 bg-[#81700e] py-2 rounded">
               Salvar mudanças
             </button>

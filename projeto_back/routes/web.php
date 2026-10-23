@@ -5,10 +5,13 @@ use App\Http\Controllers\EquipeController;
 use App\Http\Controllers\CompeticaoController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\SteamController;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/api/v1/steam/callback', [SteamController::class, 'callback']);
 
 Route::get('ola', function () {
     echo "Hola Mundo !!!";

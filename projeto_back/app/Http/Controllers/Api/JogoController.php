@@ -30,4 +30,25 @@ class JogoController extends Controller
             ], 502);
         }
     }
+
+    public function cover(Request $request, IgdbService $igdb)
+    {
+        $validated = $request->validate([
+            'search' => ['required', 'string', 'min:1', 'max:100'],
+        ]);
+
+        try {
+            return response()->json([
+                'capa_url' => $igdb->findCoverByName($validated['search']),
+            ]);
+        } catch (Throwable $e) {
+            Log::warning('Erro ao consultar capa de jogo no IGDB.', [
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Não foi possível consultar a capa alternativa.',
+            ], 502);
+        }
+    }
 }

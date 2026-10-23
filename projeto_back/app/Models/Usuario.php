@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -67,5 +68,10 @@ class Usuario extends Authenticatable
     {
         return $this->hasMany(Participantes_Competicoes::class, 'id_participante', 'id')
             ->where('tipo_participante', 'usuario');
+    }
+
+    public function contaSteam(): HasOne
+    {
+        return $this->hasOne(ContaSteam::class, 'usuario_id');
     }
 }

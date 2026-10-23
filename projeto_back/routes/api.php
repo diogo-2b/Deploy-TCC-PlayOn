@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\DenunciaController;
 use App\Services\FirebaseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\SteamController;
 
 
 
@@ -37,6 +38,7 @@ Route::prefix('v1')->group(function () {
     });
 
     Route::get('/jogos', [JogoController::class, 'search']);
+    Route::get('/jogos/capa', [JogoController::class, 'cover']);
 
 
 
@@ -50,6 +52,10 @@ Route::prefix('v1')->group(function () {
 
 
     Route::middleware('auth:sanctum')->group(function () {
+        Route::get('steam/start', [SteamController::class, 'start']);
+        Route::delete('steam/link', [SteamController::class, 'unlink']);
+        Route::get('steam/status', [SteamController::class, 'status']);
+        Route::get('usuarios/{usuarioId}/steam/recentes', [SteamController::class, 'recentlyPlayedGames']);
         Route::get('chats/{type}/{id}/access', [\App\Http\Controllers\Api\ChatAuthorizationController::class, 'access']);
         Route::post('auth/firebase-token', [\App\Http\Controllers\Api\ChatAuthorizationController::class, 'firebaseToken']);
         Route::apiResource('competicoes', CompeticaoController::class)->only(['store', 'update', 'destroy']);

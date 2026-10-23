@@ -5,6 +5,8 @@ import Card from "../components/Card/Cards.jsx";
 import DenunciaModal from "../components/DenunciaModal/DenunciaModal.jsx";
 import axiosClient from "../utils/axios-client";
 import { useAuthContext } from "../context/AuthProvider";
+import SteamMiniProfile from "../components/SteamMiniProfile/SteamMiniProfile.jsx";
+import RecentSteamGames from "../components/RecentSteamGames/RecentSteamGames.jsx";
 
 const VisualizarPerfil = () => {
   const { id } = useParams();
@@ -22,6 +24,7 @@ const VisualizarPerfil = () => {
   const [senha, setSenha] = useState("");
   const [imagem, setImagem] = useState(null);
   const [imagemPreview, setImagemPreview] = useState(null);
+  const [steamSecaoAberta, setSteamSecaoAberta] = useState(true);
   const podeEditar = Boolean(user?.is_admin);
 
   useEffect(() => {
@@ -111,6 +114,16 @@ const VisualizarPerfil = () => {
     usuario?.foto_url ||
     usuario?.avatar_url ||
     "/imagens/foto.png";
+  const steam = usuario?.steam;
+  const estadosSteam = {
+    0: "Offline",
+    1: "Online",
+    2: "Ocupado",
+    3: "Ausente",
+    4: "Soneca",
+    5: "Procurando troca",
+    6: "Procurando partida",
+  };
 
   if (carregando) {
     return (
@@ -276,6 +289,38 @@ const VisualizarPerfil = () => {
                 </div>
               </div>
             </div>
+          )}
+
+          {steam && (
+            <section className="relative mt-6 rounded-lg border border-white/10 bg-white/5 p-4">
+              <div className="flex items-center justify-between gap-4">
+                <h2 className="text-lg font-semibold text-[#c09318]">Conta Steam</h2>
+                <button
+                  type="button"
+                  aria-label={steamSecaoAberta ? "Minimizar seção Steam" : "Expandir seção Steam"}
+                  aria-expanded={steamSecaoAberta}
+                  onClick={() => setSteamSecaoAberta((atual) => !atual)}
+                  className="rounded px-2 py-1 text-xl leading-none text-[#c09318] transition hover:bg-white/10"
+                >
+                  {steamSecaoAberta ? "↑" : "↓"}
+                </button>
+              </div>
+              {steamSecaoAberta && (
+                <>
+              <div className="flex flex-wrap items-center gap-4">
+                {steam.avatar && <img src={steam.avatar} alt="" className="h-16 w-16 rounded-full" />}
+                <div>
+                  <p className="font-semibold">{steam.personaname || "Nome indisponível"}</p>
+                  <SteamMiniProfile steam={steam} />
+                  {steam.personastate !== null && steam.personastate !== undefined && (
+                    <p className="text-sm text-gray-300">Estado: {estadosSteam[Number(steam.personastate)] || "Indisponível"}</p>
+                  )}
+                </div>
+              </div>
+                  <RecentSteamGames usuarioId={usuario.id} hasSteam />
+                </>
+              )}
+            </section>
           )}
 
           <div className="mt-8">

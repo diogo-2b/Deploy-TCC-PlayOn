@@ -13,4 +13,5 @@ return [
     'credentials' => $json
         ? json_decode($json, true)
         : base_path(env('FIREBASE_CREDENTIALS', 'storage/app/firebase/firebase.json')),
+    'ca_bundle' => env('FIREBASE_CA_BUNDLE'),
 ];

@@ -38,6 +38,17 @@ return [
     'igdb' => [
         'client_id' => env('IGDB_CLIENT_ID'),
         'client_secret' => env('IGDB_CLIENT_SECRET'),
+        'ca_bundle' => env('IGDB_CA_BUNDLE', env('FIREBASE_CA_BUNDLE')),
+    ],
+
+    'steam' => [
+        'api_key' => env('STEAM_API_KEY'),
+        'realm' => env('STEAM_OPENID_REALM', env('APP_URL')),
+        'return_to' => env('STEAM_OPENID_RETURN_TO', env('APP_URL') . '/api/v1/steam/callback'),
+        'frontend_callback_url' => env('STEAM_FRONTEND_CALLBACK_URL', env('FRONTEND_URL', 'http://localhost:5173') . '/perfil'),
+        'ca_bundle' => env('STEAM_CA_BUNDLE', env('FIREBASE_CA_BUNDLE')),
+        'recent_cache_minutes' => (int) env('STEAM_RECENT_CACHE_MINUTES', 10),
+        'recent_limit' => (int) env('STEAM_RECENT_LIMIT', 6),
     ],
 
 ];
