@@ -12,7 +12,6 @@ use App\Services\CloudinaryService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
-use Illuminate\Support\Facades\Auth;
 
 class CompeticaoController extends Controller
 {
@@ -21,11 +20,12 @@ class CompeticaoController extends Controller
         return CompeticaoResource::collection(Competicao::ativas()->with('jogo')->get());
     }
 
-    public function show($id)
+    public function show(\Illuminate\Http\Request $request, $id)
     {
         $competicao = Competicao::findOrFail($id);
 
-        if ($competicao->isEncerrada() && !$this->usuarioPodeVerEncerrada($competicao)) {
+        if ($competicao->isEncerrada()
+            && (!$request->user() || !$competicao->usuarioPodeAcessarDetalhes($request->user()))) {
             return response()->json(['message' => 'Esta competição foi encerrada.'], 403);
         }
 
@@ -39,6 +39,13 @@ class CompeticaoController extends Controller
     public function store(CompeticaoStoreRequest $request, CloudinaryService $cloudinary)
     {
         $data = $request->validated();
+        $data['modo'] = $data['modo'] ?? 'personalizado';
+        if ($data['modo'] === 'personalizado') {
+            $data['formato'] = null;
+            $data['quantidade_participantes'] = null;
+            $data['numero_rodadas'] = null;
+        }
+        $data['dono'] = $request->user()->id;
         if ($request->hasFile('imagem')) {
             $data['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/competicoes');
         }
@@ -95,6 +102,27 @@ class CompeticaoController extends Controller
         }
 
         $data = $request->validated();
+        unset($data['dono']);
+        if (($data['modo'] ?? null) === 'personalizado') {
+            $data['formato'] = null;
+            $data['quantidade_participantes'] = null;
+            $data['numero_rodadas'] = null;
+        }
+        if ($competicao->partidas()->exists()) {
+            foreach (['modo', 'formato', 'quantidade_participantes', 'numero_rodadas', 'inscricao'] as $campo) {
+                if (array_key_exists($campo, $data) && $data[$campo] != $competicao->{$campo}) {
+                    return response()->json([
+                        'message' => 'O formato não pode ser alterado após a geração das partidas.',
+                    ], 422);
+                }
+            }
+        }
+        if ($competicao->participantes()->exists() && array_key_exists('inscricao', $data)
+            && (bool) $data['inscricao'] !== (bool) $competicao->inscricao) {
+            return response()->json([
+                'message' => 'O tipo de participante não pode ser alterado após inscrições.',
+            ], 422);
+        }
         if ($request->hasFile('imagem')) {
             $data['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/competicoes');
         }
@@ -153,33 +181,4 @@ class CompeticaoController extends Controller
         return response()->noContent();
     }
 
-    private function usuarioPodeVerEncerrada(Competicao $competicao): bool
-    {
-        $user = Auth::user();
-        if (!$user) {
-            return false;
-        }
-
-        if ($user->is_admin || (int) $competicao->dono === (int) $user->id) {
-            return true;
-        }
-
-        return $competicao->participantes()
-            ->where('aprovado', true)
-            ->where(function ($query) use ($user) {
-                $query->where(function ($query) use ($user) {
-                    $query->where('tipo_participante', 'usuario')
-                        ->where('id_participante', $user->id);
-                })->orWhere(function ($query) use ($user) {
-                    $query->where('tipo_participante', 'equipe')
-                        ->whereHas('equipe', function ($teamQuery) use ($user) {
-                            $teamQuery->where('administrador', $user->id)
-                                ->orWhereHas('membros', function ($memberQuery) use ($user) {
-                                    $memberQuery->where('id_usuario', $user->id)
-                                        ->where('aprovado', true);
-                                });
-                        });
-                });
-            })->exists();
-    }
 }

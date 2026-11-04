@@ -80,12 +80,8 @@ class UsuarioController extends Controller
             ->get();
 
         $visualizador = request()->user();
-        $competicoes = $competicoes->map(function ($competicao) use ($visualizador, $usuario) {
-            $podeVerDetalhes = $visualizador && (
-                $visualizador->is_admin ||
-                (int) $visualizador->id === (int) $usuario->id ||
-                (int) $competicao->dono === (int) $visualizador->id
-            );
+        $competicoes = $competicoes->map(function ($competicao) use ($visualizador) {
+            $podeVerDetalhes = $visualizador && $competicao->usuarioPodeAcessarDetalhes($visualizador);
 
             if (!$competicao->isEncerrada() || $podeVerDetalhes) {
                 return array_merge(

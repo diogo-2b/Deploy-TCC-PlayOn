@@ -59,3 +59,21 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Competições estruturadas
+
+Competições antigas e novas sem modo informado permanecem no modo `personalizado`. A migration `2026_10_23_000000_add_structured_fields_to_competicoes.php` adiciona modo/formato, configurações e partidas sem alterar as inscrições existentes. Execute `php artisan migrate` no ambiente PostgreSQL/Supabase configurado antes de publicar a nova API.
+
+No mata-mata, participantes aprovados são ordenados pela data de inscrição e pelo ID da inscrição. A chave emparelha participantes consecutivos nessa ordem. Alterar o resultado de uma fase invalida os resultados das fases seguintes dependentes; empate não é aceito em partidas eliminatórias. A disputa de terceiro lugar é composta pelos perdedores das semifinais.
+
+Na classificação por pontos, vitórias valem 3 pontos, empates 1 e derrotas 0. O desempate é: pontos (maior), vitórias (maior), empates (maior), derrotas (menor) e ordem de inscrição (mais antiga primeiro). Não são calculados gols ou saldo.
+
+Endpoints autenticados:
+
+- `GET /api/v1/competicoes/{id}/resultados`: partidas, pódio ou classificação.
+- `POST /api/v1/competicoes/{id}/chave`: gera a chave de mata-mata quando o total de participantes aprovados corresponde ao formato.
+- `POST /api/v1/competicoes/{id}/partidas`: cria confronto de pontos com `rodada`, `participante_a_id` e `participante_b_id`.
+- `PUT /api/v1/competicoes/{id}/partidas/{partidaId}/resultado`: registra `resultado` como `a`, `b` ou `empate` (empate somente por pontos).
+- `PUT /api/v1/competicoes/{id}/podio`: grava os IDs aprovados em `primeiro_lugar_id`, `segundo_lugar_id` e `terceiro_lugar_id` para o modo personalizado.
+
+A geração e as alterações de resultado são transacionais. Somente o organizador ou um administrador pode gerar partidas e alterá-las; após a data de encerramento não são aceitas alterações de partidas. O organizador pode concluir o pódio manual de uma competição personalizada após o encerramento.

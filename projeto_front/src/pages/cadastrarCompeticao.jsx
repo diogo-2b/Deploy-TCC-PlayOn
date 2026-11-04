@@ -6,15 +6,21 @@ import LightPillar from "../components/LightPillar/LightPillar.jsx";
 import { useCompeticoes } from "../context/CompeticoesProvider";
 
 const CadastrarCompeticao = () => {
-  const usuarioRaw = localStorage.getDecryptedItem("auth_user");
-  const usuario = usuarioRaw ? JSON.parse(usuarioRaw) : {};
-
+  const dataHoje = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
   const [nome, setNome] = useState("");
   const [descricao, setDescricao] = useState("");
   const [dataEncerramento, setDataEncerramento] = useState("");
-  const [dono] = useState(usuario.id || usuario.email || null);
   const [tipo, setTipo] = useState("");
   const [inscricao, setInscricao] = useState("equipe");
+  const [modo, setModo] = useState("personalizado");
+  const [formato, setFormato] = useState("mata_mata_4");
+  const [quantidadeParticipantes, setQuantidadeParticipantes] = useState("4");
+  const [numeroRodadas, setNumeroRodadas] = useState("1");
   const [imagem, setImagem] = useState(null);
   const [erros, setErros] = useState({});
   const [mensagem, setMensagem] = useState("");
@@ -32,9 +38,7 @@ const CadastrarCompeticao = () => {
   useEffect(() => {
     return () => {
       if (imagemPreview) {
-        try {
-          URL.revokeObjectURL(imagemPreview);
-        } catch {}
+        URL.revokeObjectURL(imagemPreview);
       }
     };
   }, [imagemPreview]);
@@ -60,7 +64,7 @@ const CadastrarCompeticao = () => {
           Array.isArray(response.data) ? response.data : []
         );
       }
-    } catch (error) {
+    } catch {
       if (!cancelado) {
         setJogosEncontrados([]);
         setErroBuscaJogo(
@@ -109,7 +113,7 @@ const CadastrarCompeticao = () => {
       formData.append("nome", nome);
       formData.append("descricao", descricao);
       formData.append("data_encerramento", dataEncerramento);
-      formData.append("dono", dono ?? "");
+      formData.append("modo", modo);
       formData.append(
         "igdb_id",
         String(jogoSelecionado.igdb_id)
@@ -118,18 +122,22 @@ const CadastrarCompeticao = () => {
       if (jogoSelecionado.capa_url) {
         formData.append("jogo_capa_url", jogoSelecionado.capa_url);
       }
-      if (tipo === "publico") formData.append("tipo", "1");
-      if (inscricao === "equipe") formData.append("inscricao", "1");
+      formData.append("tipo", tipo === "publico" ? "1" : "0");
+      formData.append("inscricao", inscricao === "equipe" ? "1" : "0");
+      if (modo === "estruturado") {
+        formData.append("formato", formato);
+        if (formato === "pontos") {
+          formData.append("quantidade_participantes", quantidadeParticipantes);
+          formData.append("numero_rodadas", numeroRodadas);
+        } else {
+          formData.append("quantidade_participantes", formato.replace("mata_mata_", ""));
+        }
+      }
       if (imagem) formData.append("imagem", imagem);
 
       await axiosClient.post("/competicoes", formData);
 
-      // Atualiza provider para hot-reload nas listagens
-      try {
-        await loadCompeticoes();
-      } catch (err) {
-        // silent fallback
-      }
+      await loadCompeticoes();
 
       setMensagem("Cadastro realizado com sucesso!");
       setTimeout(() => navigate("/competicoes"), 800);
@@ -226,7 +234,7 @@ const CadastrarCompeticao = () => {
               type="date"
               id="data_encerramento"
               value={dataEncerramento}
-              min={new Date().toISOString().slice(0, 10)}
+              min={dataHoje}
               onChange={(e) => setDataEncerramento(e.target.value)}
               className={`w-full p-3 bg-white/5 text-white text-sm rounded-md border outline-none ${erros.data_encerramento ? "border-red-500" : "border-white/10 focus:border-[#c09318]"}`}
             />
@@ -421,6 +429,77 @@ const CadastrarCompeticao = () => {
               <div className="text-red-500 text-sm mt-1">{erros.inscricao}</div>
             )}
           </div>
+
+          <div className="mb-4">
+            <label htmlFor="modo" className="mb-2 block text-sm text-gray-300">
+              Modo de competição:
+            </label>
+            <select
+              id="modo"
+              value={modo}
+              onChange={(event) => setModo(event.target.value)}
+              className="w-full rounded-md border border-white/10 bg-white/5 p-3 text-sm text-white"
+            >
+              <option value="personalizado">Personalizado</option>
+              <option value="estruturado">Estruturado</option>
+            </select>
+          </div>
+
+          {modo === "estruturado" && (
+            <div className="mb-4 rounded-lg border border-white/10 p-4">
+              <label htmlFor="formato" className="mb-2 block text-sm text-gray-300">
+                Formato:
+              </label>
+              <select
+                id="formato"
+                value={formato}
+                onChange={(event) => {
+                  setFormato(event.target.value);
+                  if (event.target.value !== "pontos") {
+                    setQuantidadeParticipantes(event.target.value.replace("mata_mata_", ""));
+                  }
+                }}
+                className="mb-3 w-full rounded-md border border-white/10 bg-white/5 p-3 text-sm text-white"
+              >
+                <option value="mata_mata_4">Mata-mata — semifinais (4 participantes)</option>
+                <option value="mata_mata_8">Mata-mata — quartas de final (8 participantes)</option>
+                <option value="mata_mata_16">Mata-mata — oitavas de final (16 participantes)</option>
+                <option value="pontos">Classificação por pontos</option>
+              </select>
+              {formato === "pontos" ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="text-sm text-gray-300">
+                    Número de participantes (1 a 20):
+                    <input
+                      type="number"
+                      min="1"
+                      max="20"
+                      required
+                      value={quantidadeParticipantes}
+                      onChange={(event) => setQuantidadeParticipantes(event.target.value)}
+                      className="mt-1 w-full rounded-md border border-white/10 bg-white/5 p-3 text-white"
+                    />
+                  </label>
+                  <label className="text-sm text-gray-300">
+                    Número de rodadas:
+                    <input
+                      type="number"
+                      min="1"
+                      max="2147483647"
+                      required
+                      value={numeroRodadas}
+                      onChange={(event) => setNumeroRodadas(event.target.value)}
+                      className="mt-1 w-full rounded-md border border-white/10 bg-white/5 p-3 text-white"
+                    />
+                  </label>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400">
+                  A chave é criada pelo organizador quando todos os participantes exigidos estiverem aprovados. A ordem segue a data de inscrição e o ID.
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="mb-4">
             <label

@@ -4,10 +4,17 @@ import { useCallback, useEffect, useState } from "react";
 import LightPillar from "../components/LightPillar/LightPillar.jsx";
 import DenunciaModal from "../components/DenunciaModal/DenunciaModal.jsx";
 import Chat from "../components/Chat/Chat.jsx";
+import CompeticaoResultados from "../components/CompeticaoResultados.jsx";
 import axiosClient from "../utils/axios-client";
 import { useAuthContext } from "../context/AuthProvider";
 
 const AlterarCompeticao = () => {
+  const dataHoje = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
   const { codigo } = useParams();
   const { user } = useAuthContext();
   const [competicao, setCompeticao] = useState(null);
@@ -18,6 +25,10 @@ const AlterarCompeticao = () => {
   const [dataEncerramento, setDataEncerramento] = useState("");
   const [tipo, setTipo] = useState("");
   const [inscricao, setInscricao] = useState("");
+  const [modo, setModo] = useState("personalizado");
+  const [formato, setFormato] = useState("mata_mata_4");
+  const [quantidadeParticipantes, setQuantidadeParticipantes] = useState("4");
+  const [numeroRodadas, setNumeroRodadas] = useState("1");
   const [imagem, setImagem] = useState(null);
   const [mensagem, setMensagem] = useState("");
   const [imagemPreview, setImagemPreview] = useState(null);
@@ -132,6 +143,10 @@ const AlterarCompeticao = () => {
         setDataEncerramento(data.data_encerramento || "");
         setTipo(data.tipo ? "publico" : "privado");
         setInscricao(data.inscricao ? "equipe" : "pessoa");
+        setModo(data.modo || "personalizado");
+        setFormato(data.formato || "mata_mata_4");
+        setQuantidadeParticipantes(String(data.quantidade_participantes || 4));
+        setNumeroRodadas(String(data.numero_rodadas || 1));
         setJogoSelecionado(data.jogo || null);
         setBuscaJogo(data.jogo?.nome || "");
 
@@ -230,8 +245,18 @@ const AlterarCompeticao = () => {
       formData.append("nome", nome);
       formData.append("descricao", descricao);
       formData.append("data_encerramento", dataEncerramento);
-      if (tipo === "publico") formData.append("tipo", "1");
-      if (inscricao === "equipe") formData.append("inscricao", "1");
+      formData.append("modo", modo);
+      formData.append("tipo", tipo === "publico" ? "1" : "0");
+      formData.append("inscricao", inscricao === "equipe" ? "1" : "0");
+      if (modo === "estruturado") {
+        formData.append("formato", formato);
+        if (formato === "pontos") {
+          formData.append("quantidade_participantes", quantidadeParticipantes);
+          formData.append("numero_rodadas", numeroRodadas);
+        } else {
+          formData.append("quantidade_participantes", formato.replace("mata_mata_", ""));
+        }
+      }
       if (imagem) formData.append("imagem", imagem);
       if (jogoSelecionado?.igdb_id) {
         formData.append("igdb_id", String(jogoSelecionado.igdb_id));
@@ -493,7 +518,7 @@ const AlterarCompeticao = () => {
             <input
               type="date"
               value={dataEncerramento}
-              min={new Date().toISOString().slice(0, 10)}
+              min={dataHoje}
               onChange={(e) => setDataEncerramento(e.target.value)}
               className="mb-3 rounded-md border border-white/10 bg-white/5 p-3 text-sm text-white outline-none focus:border-[#c09318]"
               required
@@ -584,6 +609,53 @@ const AlterarCompeticao = () => {
               <option value="pessoa">Individual</option>
               <option value="equipe">Equipes</option>
             </select>
+
+            <label className="text-sm text-gray-400">Modo de competição:</label>
+            <select
+              value={modo}
+              onChange={(event) => setModo(event.target.value)}
+              className="mb-3 rounded-md border border-white/10 bg-white/5 p-3 text-sm text-white"
+            >
+              <option value="personalizado">Personalizado</option>
+              <option value="estruturado">Estruturado</option>
+            </select>
+
+            {modo === "estruturado" && (
+              <div className="mb-4 rounded-lg border border-white/10 p-4">
+                <label className="text-sm text-gray-400">Formato:</label>
+                <select
+                  value={formato}
+                  onChange={(event) => {
+                    setFormato(event.target.value);
+                    if (event.target.value !== "pontos") {
+                      setQuantidadeParticipantes(event.target.value.replace("mata_mata_", ""));
+                    }
+                  }}
+                  className="mb-3 mt-1 w-full rounded-md border border-white/10 bg-white/5 p-3 text-sm text-white"
+                >
+                  <option value="mata_mata_4">Mata-mata — semifinais (4 participantes)</option>
+                  <option value="mata_mata_8">Mata-mata — quartas de final (8 participantes)</option>
+                  <option value="mata_mata_16">Mata-mata — oitavas de final (16 participantes)</option>
+                  <option value="pontos">Classificação por pontos</option>
+                </select>
+                {formato === "pontos" ? (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="text-sm text-gray-300">
+                      Número de participantes (1 a 20):
+                      <input type="number" min="1" max="20" required value={quantidadeParticipantes} onChange={(event) => setQuantidadeParticipantes(event.target.value)} className="mt-1 w-full rounded-md border border-white/10 bg-white/5 p-3 text-white" />
+                    </label>
+                    <label className="text-sm text-gray-300">
+                      Número de rodadas:
+                      <input type="number" min="1" max="2147483647" required value={numeroRodadas} onChange={(event) => setNumeroRodadas(event.target.value)} className="mt-1 w-full rounded-md border border-white/10 bg-white/5 p-3 text-white" />
+                    </label>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-400">
+                    A chave usa inscritos aprovados em ordem de inscrição (data e ID); não será possível alterar inscrições após gerá-la.
+                  </p>
+                )}
+              </div>
+            )}
 
             <label className="text-sm text-gray-400">Foto:</label>
             <input
@@ -879,6 +951,13 @@ const AlterarCompeticao = () => {
               <div className="mt-2 text-sm text-green-300">{mensagem}</div>
             )}
           </div>
+        )}
+        {!carregando && competicao && (
+          <CompeticaoResultados
+            competicao={competicao}
+            participantes={participantes}
+            organizador={Boolean(isOwner || usuarioLogado?.is_admin)}
+          />
         )}
       </section>
       {!carregando && competicao && (

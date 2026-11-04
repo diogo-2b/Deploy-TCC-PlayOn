@@ -43,7 +43,7 @@ class EquipeController extends Controller
             $query->where('tipo_participante', 'equipe')
                 ->where('id_participante', $id)
                 ->where('aprovado', true);
-        })->where('data_encerramento', '<', now()->toDateString())
+        })->where('data_encerramento', '<', now(config('app.timezone'))->toDateString())
             ->orderByDesc('data_encerramento')
             ->get();
 

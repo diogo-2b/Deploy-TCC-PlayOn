@@ -72,6 +72,13 @@ class ParticipantesCompeticoesController extends Controller
             return response()->json(['message' => 'Não é possível se inscrever em uma competição encerrada.'], 422);
         }
 
+        if ($competicao->partidas()->exists()) {
+            return response()->json(['message' => 'As inscrições foram encerradas após a geração das partidas.'], 422);
+        }
+        if ($competicao->podioManualDefinido()) {
+            return response()->json(['message' => 'Limpe o pódio manual antes de alterar as inscrições.'], 422);
+        }
+
         // Verificar se o tipo de participante matches a competição
         if ($validated['tipo_participante'] === 'usuario' && $competicao->inscricao) {
             return response()->json(['message' => 'Essa competição só aceita inscrições de equipes'], 400);
@@ -103,6 +110,11 @@ class ParticipantesCompeticoesController extends Controller
 
         if ($existente) {
             return response()->json(['message' => 'Já está inscrito nesta competição'], 409);
+        }
+
+        if ($competicao->modo === 'estruturado' && $competicao->quantidade_participantes
+            && $competicao->participantes()->count() >= (int) $competicao->quantidade_participantes) {
+            return response()->json(['message' => 'A quantidade de participantes configurada foi atingida.'], 422);
         }
 
         // Competição pública aprova automaticamente; privada fica pendente
@@ -144,6 +156,12 @@ class ParticipantesCompeticoesController extends Controller
         if ($competicao->isEncerrada()) {
             return response()->json(['message' => 'Competições encerradas não podem ser alteradas.'], 422);
         }
+        if ($competicao->partidas()->exists()) {
+            return response()->json(['message' => 'As inscrições não podem ser alteradas após a geração das partidas.'], 422);
+        }
+        if ($competicao->podioManualDefinido()) {
+            return response()->json(['message' => 'Limpe o pódio manual antes de alterar as inscrições.'], 422);
+        }
 
         // Verificar se o usuário é dono da competição
         if ($competicao->dono !== Auth::id()) {
@@ -170,6 +188,12 @@ class ParticipantesCompeticoesController extends Controller
         $usuarioId = Auth::id();
         if ($competicao->isEncerrada()) {
             return response()->json(['message' => 'Competições encerradas não podem ser alteradas.'], 422);
+        }
+        if ($competicao->partidas()->exists()) {
+            return response()->json(['message' => 'As inscrições não podem ser alteradas após a geração das partidas.'], 422);
+        }
+        if ($competicao->podioManualDefinido()) {
+            return response()->json(['message' => 'Limpe o pódio manual antes de alterar as inscrições.'], 422);
         }
 
         // Permitir remoção pelo dono da competição
@@ -202,6 +226,12 @@ class ParticipantesCompeticoesController extends Controller
         $competicao = Competicao::findOrFail($competicaoId);
         if ($competicao->isEncerrada()) {
             return response()->json(['message' => 'Competições encerradas não podem ser alteradas.'], 422);
+        }
+        if ($competicao->partidas()->exists()) {
+            return response()->json(['message' => 'As inscrições não podem ser alteradas após a geração das partidas.'], 422);
+        }
+        if ($competicao->podioManualDefinido()) {
+            return response()->json(['message' => 'Limpe o pódio manual antes de alterar as inscrições.'], 422);
         }
 
         $usuarioId = Auth::id();
@@ -240,30 +270,6 @@ class ParticipantesCompeticoesController extends Controller
     private function podeAcessar(Competicao $competicao): bool
     {
         $usuario = Auth::user();
-        if (!$usuario) {
-            return false;
-        }
-
-        if ($usuario->is_admin || (int) $competicao->dono === (int) $usuario->id) {
-            return true;
-        }
-
-        return $competicao->participantes()
-            ->where('aprovado', true)
-            ->where(function ($query) use ($usuario) {
-                $query->where(function ($query) use ($usuario) {
-                    $query->where('tipo_participante', 'usuario')
-                        ->where('id_participante', $usuario->id);
-                })->orWhere(function ($query) use ($usuario) {
-                    $query->where('tipo_participante', 'equipe')
-                        ->whereHas('equipe', function ($teamQuery) use ($usuario) {
-                            $teamQuery->where('administrador', $usuario->id)
-                                ->orWhereHas('membros', function ($memberQuery) use ($usuario) {
-                                    $memberQuery->where('id_usuario', $usuario->id)
-                                        ->where('aprovado', true);
-                                });
-                        });
-                });
-            })->exists();
+        return $usuario ? $competicao->usuarioPodeAcessarDetalhes($usuario) : false;
     }
 }

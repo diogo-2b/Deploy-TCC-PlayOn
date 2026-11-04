@@ -32,6 +32,8 @@ class CompeticaoResource extends JsonResource
             'dono' => $this->dono,
             'data_encerramento' => $this->data_encerramento?->format('Y-m-d'),
             'encerrada' => $this->isEncerrada(),
+            'modo' => $this->modo ?? 'personalizado',
+            'formato' => $this->formato,
             'imagem_url' => $imagemUrl,
             'jogo' => $this->whenLoaded('jogo'),
             'media' => $this->whenLoaded('media', function () {

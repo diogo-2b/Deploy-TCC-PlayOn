@@ -26,12 +26,24 @@ class Competicao extends Model
         'inscricao',
         'jogo_id',
         'data_encerramento',
+        'modo',
+        'formato',
+        'quantidade_participantes',
+        'numero_rodadas',
+        'primeiro_lugar_tipo',
+        'primeiro_lugar_id',
+        'segundo_lugar_tipo',
+        'segundo_lugar_id',
+        'terceiro_lugar_tipo',
+        'terceiro_lugar_id',
     ];
 
     protected $casts = [
         'tipo' => 'boolean',
         'inscricao' => 'boolean',
         'data_encerramento' => 'date:Y-m-d',
+        'quantidade_participantes' => 'integer',
+        'numero_rodadas' => 'integer',
     ];
 
     protected $appends = ['imagem_url'];
@@ -80,6 +92,37 @@ class Competicao extends Model
         return $this->belongsTo(Jogo::class, 'jogo_id');
     }
 
+    public function partidas(): HasMany
+    {
+        return $this->hasMany(CompeticaoPartida::class, 'competicao_id');
+    }
+
+    public function usuarioPodeAcessarDetalhes(Usuario $usuario): bool
+    {
+        if ($usuario->is_admin || (int) $this->dono === (int) $usuario->id) {
+            return true;
+        }
+
+        return $this->participantes()
+            ->where('aprovado', true)
+            ->where(function ($query) use ($usuario) {
+                $query->where(function ($query) use ($usuario) {
+                    $query->where('tipo_participante', 'usuario')
+                        ->where('id_participante', $usuario->id);
+                })->orWhere(function ($query) use ($usuario) {
+                    $query->where('tipo_participante', 'equipe')
+                        ->whereHas('equipe', function ($equipeQuery) use ($usuario) {
+                            $equipeQuery->where('administrador', $usuario->id)
+                                ->orWhereHas('membros', function ($membroQuery) use ($usuario) {
+                                    $membroQuery
+                                        ->where('id_usuario', $usuario->id)
+                                        ->where('aprovado', true);
+                                });
+                        });
+                });
+            })->exists();
+    }
+
     public function scopeAtivas(Builder $query): Builder
     {
         return $query->whereDate('data_encerramento', '>=', now(config('app.timezone'))->toDateString());
@@ -91,5 +134,11 @@ class Competicao extends Model
             && $this->data_encerramento->toDateString() < now(config('app.timezone'))->toDateString();
     }
 
+    public function podioManualDefinido(): bool
+    {
+        return $this->primeiro_lugar_id !== null
+            || $this->segundo_lugar_id !== null
+            || $this->terceiro_lugar_id !== null;
+    }
 
 }

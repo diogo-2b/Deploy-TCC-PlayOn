@@ -13,6 +13,7 @@ use App\Services\FirebaseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\SteamController;
+use App\Http\Controllers\Api\CompeticaoResultadosController;
 
 
 
@@ -59,6 +60,11 @@ Route::prefix('v1')->group(function () {
         Route::get('chats/{type}/{id}/access', [\App\Http\Controllers\Api\ChatAuthorizationController::class, 'access']);
         Route::post('auth/firebase-token', [\App\Http\Controllers\Api\ChatAuthorizationController::class, 'firebaseToken']);
         Route::apiResource('competicoes', CompeticaoController::class)->only(['show', 'store', 'update', 'destroy']);
+        Route::get('competicoes/{competicaoId}/resultados', [CompeticaoResultadosController::class, 'show']);
+        Route::post('competicoes/{competicaoId}/chave', [CompeticaoResultadosController::class, 'gerarChave']);
+        Route::post('competicoes/{competicaoId}/partidas', [CompeticaoResultadosController::class, 'criarPartida']);
+        Route::put('competicoes/{competicaoId}/partidas/{partidaId}/resultado', [CompeticaoResultadosController::class, 'registrarResultado']);
+        Route::put('competicoes/{competicaoId}/podio', [CompeticaoResultadosController::class, 'definirPodio']);
         Route::apiResource('equipes', EquipeController::class)->only(['store', 'update', 'destroy']);
         Route::apiResource('usuarios', UsuarioController::class)->except(['store']);
         Route::get('minhas-equipes', [UsuarioController::class, 'minhasEquipes']);
