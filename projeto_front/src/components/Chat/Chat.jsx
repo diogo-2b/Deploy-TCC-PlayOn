@@ -127,6 +127,7 @@ const Chat = ({ type, entityId, user, className = "" }) => {
     } catch (sendError) {
       console.error("Erro ao enviar mensagem:", sendError);
       setError("Não foi possível enviar a mensagem.");
+      setStatus("error");
     }
   };
 

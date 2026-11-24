@@ -302,23 +302,26 @@ const AlterarUsuario = () => {
             </p>
           </div>
 
-          <label className="text-sm text-gray-400">Nome:</label>
+          <label htmlFor="perfil-nome" className="text-sm text-gray-400">Nome:</label>
           <input
+            id="perfil-nome"
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             className="mb-3 rounded-md border border-white/10 bg-white/5 p-3 text-sm text-white outline-none backdrop-blur-sm placeholder:text-gray-400 focus:border-[#c09318] focus:ring-1 focus:ring-[#c09318]"
           />
 
-          <label className="text-sm text-gray-400">Email:</label>
+          <label htmlFor="perfil-email" className="text-sm text-gray-400">Email:</label>
           <input
+            id="perfil-email"
             value={email}
             readOnly
             disabled
             className="mb-3 rounded-md border border-white/10 bg-white/5 p-3 text-sm text-gray-400 outline-none cursor-not-allowed backdrop-blur-sm"
           />
 
-          <label className="text-sm text-gray-400">Apelido:</label>
+          <label htmlFor="perfil-apelido" className="text-sm text-gray-400">Apelido:</label>
           <input
+            id="perfil-apelido"
             value={apelido}
             onChange={(e) => setApelido(e.target.value)}
             className={`mb-1 rounded-md border bg-white/5 p-3 text-sm text-white outline-none backdrop-blur-sm placeholder:text-gray-400 ${erros.apelido ? "border-red-500" : "border-white/10 focus:border-[#c09318] focus:ring-1 focus:ring-[#c09318]"}`}
@@ -327,16 +330,18 @@ const AlterarUsuario = () => {
             <div className="mb-3 text-sm text-red-500">{erros.apelido}</div>
           )}
 
-          <label className="text-sm text-gray-400">Senha:</label>
+          <label htmlFor="perfil-senha" className="text-sm text-gray-400">Senha:</label>
           <input
+            id="perfil-senha"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
             type="password"
             className="mb-3 rounded-md border border-white/10 bg-white/5 p-3 text-sm text-white outline-none backdrop-blur-sm placeholder:text-gray-400 focus:border-[#c09318] focus:ring-1 focus:ring-[#c09318]"
           />
 
-          <label className="text-sm text-gray-400">Foto:</label>
+          <label htmlFor="perfil-foto" className="text-sm text-gray-400">Foto:</label>
           <input
+            id="perfil-foto"
             type="file"
             accept="image/*"
             onChange={(e) => {

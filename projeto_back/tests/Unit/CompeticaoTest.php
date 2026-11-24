@@ -31,4 +31,18 @@ class CompeticaoTest extends TestCase
 
         $this->assertTrue($competicao->isEncerrada());
     }
+
+    public function test_competicao_sem_podio_manual_nao_tem_colocacao_definida(): void
+    {
+        $competicao = new Competicao();
+
+        $this->assertFalse($competicao->podioManualDefinido());
+    }
+
+    public function test_competicao_com_colocacao_manual_tem_podio_definido(): void
+    {
+        $competicao = new Competicao(['primeiro_lugar_id' => 42]);
+
+        $this->assertTrue($competicao->podioManualDefinido());
+    }
 }

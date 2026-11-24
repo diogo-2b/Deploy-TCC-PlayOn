@@ -1,39 +1,48 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Logo do Laravel"></a></p>
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Status da compilação"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total de downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Versão estável mais recente"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="Licença"></a>
 </p>
 
-## About Laravel
+## Sobre o Laravel
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Laravel é um framework para aplicações web com uma sintaxe expressiva e elegante.
+Acreditamos que desenvolver deve ser uma experiência agradável e criativa. O
+Laravel facilita tarefas comuns em muitos projetos web, como:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- [Mecanismo de rotas simples e rápido](https://laravel.com/docs/routing).
+- [Contêiner poderoso de injeção de dependências](https://laravel.com/docs/container).
+- Diferentes opções de armazenamento para [sessões](https://laravel.com/docs/session) e [cache](https://laravel.com/docs/cache).
+- ORM intuitivo e expressivo para bancos de dados ([Eloquent](https://laravel.com/docs/eloquent)).
+- [Migrações de esquema](https://laravel.com/docs/migrations) independentes do banco de dados.
+- [Processamento robusto de tarefas em segundo plano](https://laravel.com/docs/queues).
+- [Transmissão de eventos em tempo real](https://laravel.com/docs/broadcasting).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+O Laravel é acessível, poderoso e oferece as ferramentas necessárias para
+aplicações robustas de grande porte.
 
-## Learning Laravel
+## Aprenda Laravel
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+O Laravel tem uma [documentação abrangente](https://laravel.com/docs) e uma
+biblioteca de tutoriais em vídeo que facilitam o início no framework.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Você também pode experimentar o [Laravel Bootcamp](https://bootcamp.laravel.com),
+que orienta a criação de uma aplicação Laravel moderna desde o início.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Se preferir aprender por vídeos, acesse o [Laracasts](https://laracasts.com).
+O Laracasts oferece milhares de tutoriais sobre Laravel, PHP moderno, testes
+unitários e JavaScript.
 
-## Laravel Sponsors
+## Patrocinadores do Laravel
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Agradecemos aos patrocinadores que financiam o desenvolvimento do Laravel.
+Para saber como se tornar um patrocinador, visite o
+[programa Laravel Partners](https://partners.laravel.com).
 
-### Premium Partners
+### Parceiros premium
 
 - **[Vehikl](https://vehikl.com)**
 - **[Tighten Co.](https://tighten.co)**
@@ -44,21 +53,26 @@ We would like to extend our thanks to the following sponsors for funding Laravel
 - **[Redberry](https://redberry.international/laravel-development)**
 - **[Active Logic](https://activelogic.com)**
 
-## Contributing
+## Como contribuir
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Obrigado por considerar contribuir com o framework Laravel. O guia de
+contribuição está disponível na [documentação do Laravel](https://laravel.com/docs/contributions).
 
-## Code of Conduct
+## Código de conduta
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Para ajudar a manter uma comunidade acolhedora para todas as pessoas, leia e
+siga o [Código de conduta](https://laravel.com/docs/contributions#code-of-conduct).
 
-## Security Vulnerabilities
+## Vulnerabilidades de segurança
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Se descobrir uma vulnerabilidade de segurança no Laravel, envie um e-mail
+para Taylor Otwell pelo endereço [taylor@laravel.com](mailto:taylor@laravel.com).
+Todas as vulnerabilidades serão tratadas prontamente.
 
-## License
+## Licença
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+O framework Laravel é um software de código aberto, distribuído sob a
+[licença MIT](https://opensource.org/licenses/MIT).
 
 ## Competições estruturadas
 
@@ -77,3 +91,27 @@ Endpoints autenticados:
 - `PUT /api/v1/competicoes/{id}/podio`: grava os IDs aprovados em `primeiro_lugar_id`, `segundo_lugar_id` e `terceiro_lugar_id` para o modo personalizado.
 
 A geração e as alterações de resultado são transacionais. Somente o organizador ou um administrador pode gerar partidas e alterá-las; após a data de encerramento não são aceitas alterações de partidas. O organizador pode concluir o pódio manual de uma competição personalizada após o encerramento.
+
+## Testes PHPUnit
+
+Execute os testes a partir da pasta `projeto_back`:
+
+```powershell
+php artisan test
+```
+
+O resultado aparece no terminal, com o total de testes aprovados ou reprovados.
+Os testes cobrem autenticação, autorização de rotas e do chat, emissão de
+token Firebase, validação do cadastro de equipes e competições, formato de
+mata-mata, classificação por pontos, data de encerramento, pódio manual e
+rótulos de status das sessões. Para rodar somente os testes de chat:
+
+```powershell
+php artisan test --filter=ChatTest
+```
+
+Para rodar somente os testes de validação de competições:
+
+```powershell
+php artisan test --filter=CompeticaoValidacaoTest
+```

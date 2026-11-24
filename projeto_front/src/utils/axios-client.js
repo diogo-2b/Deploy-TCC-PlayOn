@@ -24,7 +24,9 @@ axiosClient.interceptors.response.use(
     (response) => response,
     (error) => {
         const status = error?.response?.status;
-        if (status === 401) {
+        const requestUrl = error?.config?.url || "";
+        const isLoginRequest = /\/auth\/login(?:\/|$|\?)/.test(requestUrl);
+        if (status === 401 && !isLoginRequest) {
             try {
                 localStorage.removeEncryptedItem(AUTH_TOKEN_KEY);
                 localStorage.removeEncryptedItem('auth_user');

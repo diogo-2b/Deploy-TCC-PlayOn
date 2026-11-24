@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import LightPillar from "../components/LightPillar/LightPillar.jsx";
 import { useSessoes } from "../context/SessoesProvider";
 import axiosClient from "../utils/axios-client";
+import useSubmissionGuard from "../hooks/useSubmissionGuard.js";
 
 const CadastrarSessao = () => {
   const usuarioRaw = localStorage.getDecryptedItem("auth_user");
@@ -22,6 +23,8 @@ const CadastrarSessao = () => {
 
   const navigate = useNavigate();
   const { adicionarSessao, loadSessoes } = useSessoes();
+  const { isSubmitting, beginSubmission, releaseSubmission } =
+    useSubmissionGuard();
 
   useEffect(() => {
     const termo = buscaJogo.trim();
@@ -71,12 +74,15 @@ const CadastrarSessao = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!beginSubmission()) return;
+
     setMensagem("");
     setErros({});
 
     const errosValidacao = validarFormulario();
     if (Object.keys(errosValidacao).length > 0) {
       setErros(errosValidacao);
+      releaseSubmission();
       return;
     }
 
@@ -113,6 +119,7 @@ const CadastrarSessao = () => {
         error?.message ||
         "Erro ao cadastrar sessão. Tente novamente.";
       setErros({ geral: msg });
+      releaseSubmission();
     }
   };
 
@@ -290,9 +297,11 @@ const CadastrarSessao = () => {
             <button
               type="submit"
               id="cadastrar"
-              className="w-full bg-[#81700e] hover:bg-[#978e0f] text-white rounded-md py-3 text-sm transition"
+              disabled={isSubmitting}
+              aria-busy={isSubmitting}
+              className="w-full bg-[#81700e] hover:bg-[#978e0f] text-white rounded-md py-3 text-sm transition disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Cadastrar
+              {isSubmitting ? "Cadastrando..." : "Cadastrar"}
             </button>
           </div>
 

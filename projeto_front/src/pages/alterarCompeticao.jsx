@@ -431,49 +431,59 @@ const AlterarCompeticao = () => {
       </div>
 
       <div className="relative z-10 mx-4 flex w-full max-w-6xl flex-col items-center gap-4 lg:flex-row lg:items-start lg:justify-center">
-      <section className="w-full max-w-2xl rounded-2xl border border-white/10 bg-black/40 p-8 shadow-2xl backdrop-blur-md">
-        <DenunciaModal
-          tipo="Competicao"
-          idDenunciado={codigo}
-          onSuccess={setMensagem}
-        />
-        <button
-          type="button"
-          aria-label={chatAberto ? "Fechar chat" : "Abrir chat"}
-          aria-expanded={chatAberto}
-          title={chatAberto ? "Fechar chat" : "Abrir chat"}
-          onClick={() => setChatAberto((aberto) => !aberto)}
-          className="absolute right-16 top-4 rounded-md border border-[#c09318] px-3 py-2 text-[#c09318] transition hover:bg-[#c09318]/10"
-        >
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
+      <section className="relative w-full max-w-2xl rounded-2xl border border-white/10 bg-black/40 p-8 shadow-2xl backdrop-blur-md">
+        <div className="absolute inset-x-4 top-4 z-20 flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={() => window.history.back()}
+            className="rounded-md border-2 border-[#c09318] bg-black/60 px-3 py-2 font-bold text-[#c09318] backdrop-blur-sm"
           >
-            <path d="M20 11.5a8.5 8.5 0 0 1-8.5 8.5 8.5 8.5 0 0 1-4.1-1.05L3 20l1.05-4.4A8.5 8.5 0 1 1 20 11.5Z" />
-            <path d="M8 11.5h.01M12 11.5h.01M16 11.5h.01" />
-          </svg>
-        </button>
-        <button
-          onClick={() => window.history.back()}
-          className="mb-4 inline-block border-2 border-[#c09318] text-[#c09318] px-3 py-2 rounded-md font-bold"
-        >
-          ← Voltar
-        </button>
+            ← Voltar
+          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-label={chatAberto ? "Fechar chat" : "Abrir chat"}
+              aria-expanded={chatAberto}
+              title={chatAberto ? "Fechar chat" : "Abrir chat"}
+              onClick={() => setChatAberto((aberto) => !aberto)}
+              className="rounded-md border border-[#c09318] bg-black/60 px-3 py-2 text-[#c09318] backdrop-blur-sm transition hover:bg-[#c09318]/10"
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M20 11.5a8.5 8.5 0 0 1-8.5 8.5 8.5 8.5 0 0 1-4.1-1.05L3 20l1.05-4.4A8.5 8.5 0 1 1 20 11.5Z" />
+                <path d="M8 11.5h.01M12 11.5h.01M16 11.5h.01" />
+              </svg>
+            </button>
+            <DenunciaModal
+              tipo="Competicao"
+              idDenunciado={codigo}
+              onSuccess={setMensagem}
+              buttonClassName="rounded-md border border-red-400/70 bg-black/60 px-3 py-2 text-red-300 backdrop-blur-sm transition hover:bg-red-500/10"
+            />
+          </div>
+        </div>
 
-        <div className="mb-4 flex flex-col items-center">
+        <div className="relative -mx-8 -mt-8 mb-6 h-48 overflow-hidden rounded-t-2xl border-b border-[#c09318]/50 sm:h-64">
           <img
             src={avatarUrl}
             alt={nome || "Competição"}
-            className="h-40 w-40 rounded-2xl border border-[#c09318] object-cover shadow-lg"
+            className="absolute inset-0 h-full w-full object-cover"
             onError={(event) => {
               event.currentTarget.onerror = null;
               event.currentTarget.src = "/imagens/foto.png";
             }}
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-black/5" />
+          <h1 className="absolute inset-x-5 bottom-5 text-2xl font-bold text-white drop-shadow-lg sm:text-3xl">
+            {nome || "Competição"}
+          </h1>
         </div>
 
         {carregando ? (
@@ -787,17 +797,6 @@ const AlterarCompeticao = () => {
           </form>
         ) : (
           <div className="flex flex-col gap-3">
-            <h2 className="text-center text-xl font-semibold">{nome}</h2>
-            <p className="text-sm text-gray-300">{descricao}</p>
-            <p className="text-sm text-gray-400">
-              Encerramento: {dataEncerramento || "Não informado"}
-            </p>
-            <p className="text-sm text-gray-400">
-              Tipo: {tipo === "publico" ? "Público" : "Privado"}
-            </p>
-            <p className="text-sm text-gray-400">
-              Inscrição: {inscricao === "equipe" ? "Equipes" : "Individual"}
-            </p>
             <div className="mt-2 flex items-center gap-3 rounded-md border border-white/10 bg-white/5 p-4">
               {competicao?.jogo?.capa_url ? (
                 <img
@@ -822,6 +821,16 @@ const AlterarCompeticao = () => {
                 )}
               </div>
             </div>
+            <p className="text-sm text-gray-300">{descricao}</p>
+            <p className="text-sm text-gray-400">
+              Encerramento: {dataEncerramento || "Não informado"}
+            </p>
+            <p className="text-sm text-gray-400">
+              Tipo: {tipo === "publico" ? "Público" : "Privado"}
+            </p>
+            <p className="text-sm text-gray-400">
+              Inscrição: {inscricao === "equipe" ? "Equipes" : "Individual"}
+            </p>
 
             {participantesVisiveis && participantesVisiveis.length > 0 && (
               <div className="mt-2 rounded-md border border-white/10 bg-white/5 p-4 text-sm backdrop-blur-sm">

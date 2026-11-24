@@ -107,8 +107,20 @@ const VisualizarPerfil = () => {
 
   const usuario = perfil?.usuario?.data || perfil?.usuario;
   const equipes = perfil?.equipes?.data || perfil?.equipes || [];
-  const competicoes = perfil?.competicoes?.data || perfil?.competicoes || [];
-  const itens = aba === "equipes" ? equipes : competicoes;
+  const todasCompeticoes =
+    perfil?.competicoes?.data || perfil?.competicoes || [];
+  const competicoes = todasCompeticoes.filter(
+    (competicao) => !competicao.encerrada,
+  );
+  const historico = todasCompeticoes.filter(
+    (competicao) => competicao.encerrada,
+  );
+  const itens =
+    aba === "equipes"
+      ? equipes
+      : aba === "historico"
+        ? historico
+        : competicoes;
   const avatarUrl =
     usuario?.imagem_url ||
     usuario?.foto_url ||
@@ -168,23 +180,26 @@ const VisualizarPerfil = () => {
       </div>
 
       <section className="relative z-10 mx-auto w-full max-w-4xl px-4 py-8">
-        <DenunciaModal
-          tipo="Usuario"
-          idDenunciado={id}
-          onSuccess={setMensagem}
-        />
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="mb-4 rounded-md border-2 border-[#c09318] px-3 py-2 font-bold text-[#c09318]"
-        >
-          ← Voltar
-        </button>
-        {mensagem && (
-          <p className="mb-4 text-sm text-green-300">{mensagem}</p>
-        )}
-
         <div className="rounded-2xl border border-white/10 bg-black/40 p-6 shadow-2xl backdrop-blur-md">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="rounded-md border-2 border-[#c09318] px-3 py-2 font-bold text-[#c09318]"
+            >
+              ← Voltar
+            </button>
+            <DenunciaModal
+              tipo="Usuario"
+              idDenunciado={id}
+              onSuccess={setMensagem}
+              buttonClassName="rounded-md border border-red-400/70 px-3 py-2 text-red-300 transition hover:bg-red-500/10"
+            />
+          </div>
+          {mensagem && (
+            <p className="mb-4 text-sm text-green-300">{mensagem}</p>
+          )}
+
           <div className="mb-8 flex flex-col items-center">
             <img
               src={imagemPreview || avatarUrl}
@@ -225,15 +240,6 @@ const VisualizarPerfil = () => {
                 <input
                   value={apelido}
                   onChange={(event) => setApelido(event.target.value)}
-                  className="mt-1 w-full rounded-md border border-white/10 bg-white/5 p-3 text-white outline-none focus:border-[#c09318]"
-                />
-              </label>
-              <label className="text-sm text-gray-400 sm:col-span-2">
-                Email
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
                   className="mt-1 w-full rounded-md border border-white/10 bg-white/5 p-3 text-white outline-none focus:border-[#c09318]"
                 />
               </label>
@@ -280,12 +286,6 @@ const VisualizarPerfil = () => {
                 <label className="text-sm text-gray-400">Apelido</label>
                 <div className="mt-1 rounded-md border border-white/10 bg-white/5 p-3 text-gray-200">
                   {usuario.apelido || "Não informado"}
-                </div>
-              </div>
-              <div className="sm:col-span-2">
-                <label className="text-sm text-gray-400">Email</label>
-                <div className="mt-1 rounded-md border border-white/10 bg-white/5 p-3 text-gray-400">
-                  {usuario.email || "Não informado"}
                 </div>
               </div>
             </div>
@@ -347,6 +347,17 @@ const VisualizarPerfil = () => {
               >
                 Competições ({competicoes.length})
               </button>
+              <button
+                type="button"
+                onClick={() => setAba("historico")}
+                className={`rounded-md px-4 py-2 font-semibold ${
+                  aba === "historico"
+                    ? "bg-[#81700e] text-white"
+                    : "bg-white/10 text-gray-300"
+                }`}
+              >
+                Histórico ({historico.length})
+              </button>
             </div>
 
             <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -356,7 +367,9 @@ const VisualizarPerfil = () => {
                 <p className="text-gray-300">
                   {aba === "equipes"
                     ? "Este usuário ainda não participa de nenhuma equipe."
-                    : "Este usuário ainda não participa de nenhuma competição."}
+                    : aba === "historico"
+                      ? "Este usuário ainda não possui competições encerradas no histórico."
+                      : "Este usuário ainda não participa de nenhuma competição."}
                 </p>
               )}
             </div>

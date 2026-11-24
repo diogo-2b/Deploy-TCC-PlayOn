@@ -4,6 +4,7 @@ import axiosClient from "../utils/axios-client";
 import { useEffect } from "react";
 import LightPillar from "../components/LightPillar/LightPillar.jsx";
 import { useCompeticoes } from "../context/CompeticoesProvider";
+import useSubmissionGuard from "../hooks/useSubmissionGuard.js";
 
 const CadastrarCompeticao = () => {
   const dataHoje = new Intl.DateTimeFormat("en-CA", {
@@ -34,6 +35,8 @@ const CadastrarCompeticao = () => {
 
   const navigate = useNavigate();
   const { loadCompeticoes } = useCompeticoes();
+  const { isSubmitting, beginSubmission, releaseSubmission } =
+    useSubmissionGuard();
 
   useEffect(() => {
     return () => {
@@ -99,12 +102,15 @@ const CadastrarCompeticao = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!beginSubmission()) return;
+
     setMensagem("");
     setErros({});
 
     const errosValidacao = validarFormulario();
     if (Object.keys(errosValidacao).length > 0) {
       setErros(errosValidacao);
+      releaseSubmission();
       return;
     }
 
@@ -152,6 +158,7 @@ const CadastrarCompeticao = () => {
         error?.response?.data?.message ||
         "Erro ao cadastrar competição. Tente novamente.";
       setErros({ geral: msg });
+      releaseSubmission();
     }
   };
 
@@ -522,11 +529,11 @@ const CadastrarCompeticao = () => {
             />
 
             {imagemPreview && (
-              <div className="mt-3 flex justify-center">
+              <div className="mt-3 overflow-hidden rounded-xl border border-[#c09318] shadow-lg">
                 <img
                   src={imagemPreview}
                   alt="Pré-visualização"
-                  className="h-32 w-32 rounded-2xl border border-[#c09318] object-cover shadow-lg"
+                  className="aspect-[16/7] w-full object-cover"
                   onLoad={() => URL.revokeObjectURL(imagemPreview)}
                 />
               </div>
@@ -537,9 +544,11 @@ const CadastrarCompeticao = () => {
             <button
               type="submit"
               id="cadastrar"
-              className="w-full bg-[#81700e] hover:bg-[#978e0f] text-white rounded-md py-3 text-sm transition"
+              disabled={isSubmitting}
+              aria-busy={isSubmitting}
+              className="w-full bg-[#81700e] hover:bg-[#978e0f] text-white rounded-md py-3 text-sm transition disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Cadastrar
+              {isSubmitting ? "Cadastrando..." : "Cadastrar"}
             </button>
           </div>
 

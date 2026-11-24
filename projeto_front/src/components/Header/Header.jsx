@@ -141,7 +141,14 @@ export const Header = () => {
               >
                 Alterar Tema
               </button>
-              <button onClick={() => navigate("/ajuda")}>Ajuda</button>
+              <button
+                onClick={() => {
+                  setMenuAberto(false);
+                  navigate("/ajuda");
+                }}
+              >
+                Ajuda
+              </button>
               <button className="logout-btn" onClick={handleLogout}>
                 Logout
               </button>

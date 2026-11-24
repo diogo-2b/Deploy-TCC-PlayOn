@@ -21,6 +21,7 @@ import GerenciarDenuncias from "./pages/gerenciarDenuncias.jsx";
 import CadastrarEquipe from "./pages/cadastrarEquipe.jsx";
 import CadastrarCompeticao from "./pages/cadastrarCompeticao.jsx";
 import CadastrarSessao from "./pages/cadastrarSessao.jsx";
+import Ajuda from "./pages/ajuda.jsx";
 import { AuthProvider } from "./context/AuthProvider";
 import PrivateRoute from "./config/PrivateRoute";
 
@@ -128,6 +129,15 @@ const App = () => {
                       element={
                         <PrivateRoute>
                           <GerenciarDenuncias />
+                        </PrivateRoute>
+                      }
+                    />
+
+                    <Route
+                      path="/ajuda"
+                      element={
+                        <PrivateRoute>
+                          <Ajuda />
                         </PrivateRoute>
                       }
                     />

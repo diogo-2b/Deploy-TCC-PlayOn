@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import LightPillar from "../components/LightPillar/LightPillar.jsx";
 import axiosClient from "../utils/axios-client";
 import { useEquipes } from "../context/EquipesProvider";
+import useSubmissionGuard from "../hooks/useSubmissionGuard.js";
 
 const CadastrarEquipe = () => {
   const usuarioRaw = localStorage.getDecryptedItem("auth_user");
@@ -19,6 +20,8 @@ const CadastrarEquipe = () => {
 
   const navigate = useNavigate();
   const { loadEquipes } = useEquipes();
+  const { isSubmitting, beginSubmission, releaseSubmission } =
+    useSubmissionGuard();
 
   useEffect(() => {
     return () => {
@@ -40,12 +43,15 @@ const CadastrarEquipe = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!beginSubmission()) return;
+
     setMensagem("");
     setErros({});
 
     const errosValidacao = validarFormulario();
     if (Object.keys(errosValidacao).length > 0) {
       setErros(errosValidacao);
+      releaseSubmission();
       return;
     }
 
@@ -73,6 +79,7 @@ const CadastrarEquipe = () => {
         error?.response?.data?.message ||
         "Erro ao cadastrar equipe. Tente novamente.";
       setErros({ geral: msg });
+      releaseSubmission();
     }
   };
 
@@ -206,9 +213,11 @@ const CadastrarEquipe = () => {
             <button
               type="submit"
               id="cadastrar"
-              className="w-full bg-[#81700e] hover:bg-[#978e0f] text-white rounded-md py-3 text-sm transition"
+              disabled={isSubmitting}
+              aria-busy={isSubmitting}
+              className="w-full bg-[#81700e] hover:bg-[#978e0f] text-white rounded-md py-3 text-sm transition disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Cadastrar
+              {isSubmitting ? "Cadastrando..." : "Cadastrar"}
             </button>
           </div>
 

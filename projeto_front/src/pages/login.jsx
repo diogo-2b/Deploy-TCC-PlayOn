@@ -233,7 +233,7 @@ const Login = () => {
               e.stopPropagation();
               handleLogin(e);
             }}
-            className="mt-4 rounded-lg bg-yellow-600 py-3 font-semibold text-white transition hover:bg-yellow-500"
+            className="mt-4 rounded-lg bg-yellow-600 py-3 font-semibold text-black transition hover:bg-yellow-500"
           >
             Entrar
           </button>

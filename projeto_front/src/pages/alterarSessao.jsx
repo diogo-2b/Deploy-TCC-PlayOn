@@ -312,8 +312,9 @@ const AlterarSessao = () => {
               Alterar Sessão
             </h2>
 
-            <label className="text-sm text-gray-400">Título:</label>
+            <label htmlFor="sessao-titulo" className="text-sm text-gray-400">Título:</label>
             <input
+              id="sessao-titulo"
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
               className={`mb-3 rounded-md border bg-white/5 p-3 text-sm text-white outline-none backdrop-blur-sm ${erros.titulo ? "border-red-500" : "border-white/10 focus:border-[#c09318] focus:ring-1 focus:ring-[#c09318]"}`}
@@ -322,8 +323,9 @@ const AlterarSessao = () => {
               <div className="mb-3 text-sm text-red-500">{erros.titulo}</div>
             )}
 
-            <label className="text-sm text-gray-400">Descrição:</label>
+            <label htmlFor="sessao-descricao" className="text-sm text-gray-400">Descrição:</label>
             <textarea
+              id="sessao-descricao"
               value={descricao}
               onChange={(e) => setDescricao(e.target.value)}
               className={`mb-3 min-h-28 rounded-md border bg-white/5 p-3 text-sm text-white outline-none backdrop-blur-sm ${erros.descricao ? "border-red-500" : "border-white/10 focus:border-[#c09318] focus:ring-1 focus:ring-[#c09318]"}`}
@@ -332,8 +334,9 @@ const AlterarSessao = () => {
               <div className="mb-3 text-sm text-red-500">{erros.descricao}</div>
             )}
 
-            <label className="text-sm text-gray-400">Jogo:</label>
+            <label htmlFor="sessao-jogo" className="text-sm text-gray-400">Jogo:</label>
             <input
+              id="sessao-jogo"
               value={buscaJogo}
               autoComplete="off"
               placeholder="Pesquise um jogo, ex.: Valorant"
@@ -380,8 +383,9 @@ const AlterarSessao = () => {
               <div className="mb-3 text-sm text-red-500">{erros.jogo}</div>
             )}
 
-            <label className="text-sm text-gray-400">Máx. de jogadores:</label>
+            <label htmlFor="sessao-max-jogadores" className="text-sm text-gray-400">Máx. de jogadores:</label>
             <input
+              id="sessao-max-jogadores"
               type="number"
               min="1"
               value={maxJogadores}
@@ -394,8 +398,9 @@ const AlterarSessao = () => {
               </div>
             )}
 
-            <label className="text-sm text-gray-400">Status:</label>
+            <label htmlFor="sessao-status" className="text-sm text-gray-400">Status:</label>
             <select
+              id="sessao-status"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
               className="mb-4 rounded-md border border-white/10 bg-white/5 p-3 text-sm text-white outline-none backdrop-blur-sm focus:border-[#c09318] focus:ring-1 focus:ring-[#c09318]"

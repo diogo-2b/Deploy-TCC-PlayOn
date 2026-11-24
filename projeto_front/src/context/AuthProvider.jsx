@@ -1,6 +1,12 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useState, useContext, useEffect } from "react";
+import {
+  createContext,
+  useCallback,
+  useState,
+  useContext,
+  useEffect,
+} from "react";
 import { manipulateLocalStorage } from "../utils/encrypt-storage";
 
 const AuthContext = createContext({
@@ -57,7 +63,7 @@ export const AuthProvider = ({ children }) => {
     }
   });
 
-  const handleSetUser = (userData) => {
+  const handleSetUser = useCallback((userData) => {
     const normalizedUser = normalizeUser(userData);
 
     if (normalizedUser) {
@@ -70,23 +76,23 @@ export const AuthProvider = ({ children }) => {
     }
 
     setUser(normalizedUser);
-  };
+  }, []);
 
-  const handleSetToken = (tokenValue) => {
+  const handleSetToken = useCallback((tokenValue) => {
     if (tokenValue) {
       localStorage.setEncryptedItem(AUTH_TOKEN_KEY, tokenValue);
     } else {
       localStorage.removeEncryptedItem(AUTH_TOKEN_KEY);
     }
     setToken(tokenValue);
-  };
+  }, []);
 
-  const logOut = () => {
+  const logOut = useCallback(() => {
     localStorage.removeEncryptedItem(AUTH_USER_KEY);
     localStorage.removeEncryptedItem(AUTH_TOKEN_KEY);
     setUser(null);
     setToken(null);
-  };
+  }, []);
 
   useEffect(() => {
     console.log("AuthProvider - Estado atual:", { user, token });
