@@ -48,6 +48,8 @@ class CompeticaoController extends Controller
         $data['dono'] = $request->user()->id;
         if ($request->hasFile('imagem')) {
             $data['imagem'] = $cloudinary->upload($request->file('imagem'), 'playon/competicoes');
+        } else {
+            $data['imagem'] = config('app.default_competition_image_url');
         }
 
         try {

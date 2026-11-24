@@ -19,6 +19,10 @@ return [
         'DEFAULT_IMAGE_URL',
         'https://res.cloudinary.com/ddpuzfnbd/image/upload/v1792605154/playon/equipes/22463a4f-6b4a-4864-971a-ccebc628ec7e.png'
     ),
+    'default_competition_image_url' => env(
+        'DEFAULT_COMPETITION_IMAGE_URL',
+        'https://res.cloudinary.com/ddpuzfnbd/image/upload/v1795490150/playon/competicoes/27a69830-8495-490a-ba21-9ca5ae0c7c29.png'
+    ),
 
     /*
     |--------------------------------------------------------------------------

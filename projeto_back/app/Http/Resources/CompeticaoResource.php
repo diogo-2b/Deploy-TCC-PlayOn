@@ -24,7 +24,7 @@ class CompeticaoResource extends JsonResource
                 ? $this->imagem
                 : asset(Storage::url('competicoes/' . $this->imagem));
         } else {
-            $imagemUrl = config('app.default_image_url');
+            $imagemUrl = config('app.default_competition_image_url');
         }
 
         return array_merge($base, [

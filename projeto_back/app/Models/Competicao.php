@@ -51,7 +51,7 @@ class Competicao extends Model
     public function getImagemUrlAttribute(): string
     {
         if (empty($this->imagem) || $this->imagem === 'foto.png') {
-            return config('app.default_image_url');
+            return config('app.default_competition_image_url');
         }
 
         return Str::startsWith($this->imagem, ['http://', 'https://'])

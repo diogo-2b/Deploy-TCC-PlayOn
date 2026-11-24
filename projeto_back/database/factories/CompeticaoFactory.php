@@ -22,7 +22,7 @@ class CompeticaoFactory extends Factory
         return [
         'nome' => $this->faker->company,
         'descricao' => $this->faker->paragraph,
-        'imagem' => config('app.default_image_url'),
+        'imagem' => config('app.default_competition_image_url'),
         'dono' => Usuario::inRandomOrder()->first()->id,
         'tipo' => $this->faker->boolean(30),
         'inscricao' => $this->faker->boolean(30),
