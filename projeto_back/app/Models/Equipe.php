@@ -25,6 +25,7 @@ class Equipe extends Model
 
     protected $casts = [
         'tipo' => 'boolean',
+        'pontos' => 'integer',
     ];
 
     protected $appends = ['imagem_url'];

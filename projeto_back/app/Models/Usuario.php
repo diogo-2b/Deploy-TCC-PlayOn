@@ -34,6 +34,7 @@ class Usuario extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'is_admin' => 'boolean',
+        'pontos' => 'integer',
     ];
 
     protected $appends = ['imagem_url'];

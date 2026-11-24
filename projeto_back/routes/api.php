@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\SteamController;
 use App\Http\Controllers\Api\CompeticaoResultadosController;
+use App\Http\Controllers\Api\RankingController;
 
 
 
@@ -40,6 +41,7 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/jogos', [JogoController::class, 'search']);
     Route::get('/jogos/capa', [JogoController::class, 'cover']);
+    Route::get('/ranking', [RankingController::class, 'index']);
 
 
 

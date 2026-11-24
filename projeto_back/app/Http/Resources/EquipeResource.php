@@ -34,6 +34,7 @@ class EquipeResource extends JsonResource
             'imagem_url' => $imagemUrl,
             'administrador' => $this->administrador,
             'tipo' => (bool) $this->tipo,
+            'pontos' => $this->pontos,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

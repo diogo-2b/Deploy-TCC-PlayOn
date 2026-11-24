@@ -42,6 +42,7 @@ class UsuarioResource extends JsonResource
             'is_admin' => (bool) $this->is_admin,
             'imagem' => $this->imagem ?? null,
             'imagem_url' => $imagemUrl,
+            'pontos' => $this->pontos,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
