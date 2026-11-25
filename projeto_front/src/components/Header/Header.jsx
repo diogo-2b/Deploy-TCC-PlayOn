@@ -35,7 +35,7 @@ const getProfileImageUrl = (usuario) => {
   return "/imagens/foto.png";
 };
 
-export const Header = () => {
+export const Header = ({ publico = false }) => {
   const navigate = useNavigate();
   const [menuAberto, setMenuAberto] = useState(false);
   const [temaClaro, setTemaClaro] = useState(
@@ -99,36 +99,65 @@ export const Header = () => {
   return (
     <header>
       <div className="header-container">
-        <div className="profile-info">
-          {/* Perfil */}
-          <button
-            className="alterarPerfil"
-            type="button"
-            id="botao_perfil"
-            onClick={handleProfileClick}
-            aria-label="Alterar perfil"
-          >
-            <img
-              src={avatarUrl}
-              alt="Foto de perfil"
-              className="profile-pic"
-              onError={(event) => {
-                event.currentTarget.onerror = null;
-                event.currentTarget.src = "/imagens/foto.png";
-              }}
-            />
-          </button>
+        <img
+          src="/imagens/logo_playon.png"
+          alt="Logo PlayOn"
+          className="header-logo"
+        />
 
-          {/* Configurações */}
-          <button
-            ref={settingsButtonRef}
-            className="settings-button"
-            title="Configurações"
-            onClick={handleSettingsClick}
-            aria-label="Configurações"
-          >
-            ⚙️
-          </button>
+        <div className="profile-info">
+          {publico ? (
+            <>
+              <button
+                type="button"
+                className="header-login-button"
+                onClick={() => navigate("/login")}
+              >
+                Fazer Login
+              </button>
+              <button
+                ref={settingsButtonRef}
+                className="settings-button"
+                title="Configurações"
+                onClick={handleSettingsClick}
+                aria-label="Configurações"
+              >
+                ⚙️
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Perfil */}
+              <button
+                className="alterarPerfil"
+                type="button"
+                id="botao_perfil"
+                onClick={handleProfileClick}
+                aria-label="Alterar perfil"
+              >
+                <img
+                  src={avatarUrl}
+                  alt="Foto de perfil"
+                  className="profile-pic"
+                  onError={(event) => {
+                    event.currentTarget.onerror = null;
+                    event.currentTarget.src = "/imagens/foto.png";
+                  }}
+                />
+              </button>
+
+              {/* Configurações */}
+              <button
+                ref={settingsButtonRef}
+                className="settings-button"
+                title="Configurações"
+                onClick={handleSettingsClick}
+                aria-label="Configurações"
+              >
+                ⚙️
+              </button>
+            </>
+          )}
 
           {/* MENU (modal/dropdown) */}
           {menuAberto && (

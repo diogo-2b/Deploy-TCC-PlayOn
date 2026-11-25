@@ -147,7 +147,13 @@ const Login = () => {
       </div>
 
       {/* Login Box */}
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-black/40 p-8 backdrop-blur-md shadow-2xl">
+      <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-black/40 px-8 pb-8 pt-2 backdrop-blur-md shadow-2xl">
+        <img
+          src="/imagens/logo_playon.png"
+          alt="Logo PlayOn"
+          className="mx-auto block h-64 w-64 max-w-full object-contain"
+        />
+
         <h1 className="mb-2 text-center text-3xl font-bold text-white">
           PlayOn
         </h1>

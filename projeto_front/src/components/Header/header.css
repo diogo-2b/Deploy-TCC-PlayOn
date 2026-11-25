@@ -63,6 +63,14 @@ header {
   transform: translateX(-50%);
 }
 
+.header-logo {
+  position: absolute;
+  left: 0;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
 .profile-info {
   position: absolute;
   right: 20px;
@@ -70,6 +78,22 @@ header {
   align-items: center;
   gap: 15px;
   z-index: 1001;
+}
+
+.header-login-button {
+  border: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, goldenrod, #e0ba26);
+  color: #171717;
+  cursor: pointer;
+  font-weight: bold;
+  padding: 9px 16px;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.header-login-button:hover {
+  background: linear-gradient(135deg, #e0ba26, #f2cf45);
+  transform: translateY(-1px);
 }
 
 .profile-pic {

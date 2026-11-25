@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import axiosClient from "../utils/axios-client";
 
-const Home = () => {
+const Home = ({ publico = false }) => {
   const { data: competicoes } = useCompeticoes();
   const { data: equipes } = useEquipes();
   const { data: sessoes } = useSessoes();
@@ -79,7 +79,7 @@ const Home = () => {
           quality="high"
         />
       </div>
-      <Header />
+      <Header publico={publico} />
       <main className="main-container relative z-10">
         <NavBar />
         <section
